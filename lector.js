@@ -37,13 +37,43 @@ async function readPdf(file){const pdfjs=await getPdf();const bytes=new Uint8Arr
   const digital=texts.join('\n');let scanned='';if(scanPages.length){status(`El PDF tiene ${scanPages.length} página(s) sin texto suficiente. Iniciando OCR...`);scanned=await ocrImages(scanPages);}
   return {text:digital+'\n'+scanned, method:scanPages.length?'PDF digital + OCR de páginas escaneadas':'Texto digital PDF',pages:pdf.numPages,truncated:pdf.numPages>pageCount};
 }
-async function readImage(file){status('Iniciando OCR de la imagen...');const worker=await makeOcrWorker();try{const {data}=await worker.recognize(file);return{text:data.text||'',method:'OCR en imagen',pages:1,truncated:false};}finally{await worker.terminate();}}
+async function improveImage(source){
+ const bitmap=await createImageBitmap(source);
+ const scale=Math.min(3,Math.max(1,1800/Math.max(bitmap.width,1)),3000/Math.max(bitmap.width,bitmap.height));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close?.();
+ const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+ for(let i=0;i<img.data.length;i+=4){const gray=0.299*img.data[i]+0.587*img.data[i+1]+0.114*img.data[i+2];const g=Math.max(0,Math.min(255,(gray-128)*1.45+150));img.data[i]=img.data[i+1]=img.data[i+2]=g;img.data[i+3]=255;}
+ ctx.putImageData(img,0,0);return canvas;
+}
+async function readImage(file){
+ status('Iniciando OCR de la imagen...');
+ const worker=await makeOcrWorker();
+ try{
+  const first=(await worker.recognize(file)).data;
+  let data=first, retried=false;
+  if(interpretarComprobante(first.text||'','imagen').articulos.length===0 || (first.confidence||0)<50){
+    status('La foto necesita una segunda lectura: ampliando y mejorando contraste...');
+    try{const canvas=await improveImage(file);const second=(await worker.recognize(canvas)).data;retried=true;
+      const score=x=>interpretarComprobante(x.text||'','imagen').articulos.length*20+(x.text||'').length/40+(x.confidence||0)/10;
+      if(score(second)>score(first))data=second;
+    }catch(e){console.warn('No se pudo optimizar la imagen',e);}
+  }
+  return {text:data.text||'',method:retried?'OCR en imagen (dos lecturas)':'OCR en imagen',pages:1,truncated:false,confidence:data.confidence};
+ }finally{await worker.terminate();}
+}
 $('read').onclick=async()=>{if(!selected||busy)return;busy=true;$('read').disabled=true;$('sample').disabled=true;prog(3);status('Preparando reconocimiento...');try{
   const isPdf=selected.type==='application/pdf'||/\.pdf$/i.test(selected.name);
   const output=isPdf?await readPdf(selected):await readImage(selected);
   if(!output.text.trim())throw new Error('No se reconoció texto en el archivo. Podés probar otra imagen más nítida.');
   current=interpretarComprobante(output.text,selected.name);current.metodo=output.method;current.paginas=output.pages;if(output.truncated)current.advertencias.push('Se procesaron solo las primeras 6 páginas de este PDF.');
-  render();status(`Lectura terminada: ${current.articulos.length} artículo(s) detectado(s). Revisá todos los campos antes de exportar.`,'ok');prog(100);$('pages').textContent=`${output.pages} página(s) · ${output.method}`;
+  if(output.confidence!=null&&output.confidence<55)current.advertencias.push('Lectura OCR con baja confianza. Verificá cada dato contra la imagen.');
+  render();
+  if(current.articulos.length===0)status('Se reconoció texto, pero no se pudieron identificar artículos. Abrí «Ver texto extraído» y corregí los campos o agregá artículos.','warning');
+  else status('Lectura terminada: '+current.articulos.length+' artículo(s). Revisá los datos contra la foto.','ok');prog(100);$('pages').textContent=`${output.pages} página(s) · ${output.method}`;
 }catch(e){status('No se pudo completar la lectura: '+(e.message||e)+'. Revisá tu conexión a Internet, el formato y la nitidez.','error');$('progress').classList.add('hidden');}
 finally{busy=false;$('read').disabled=!selected;$('sample').disabled=false;}
 };
