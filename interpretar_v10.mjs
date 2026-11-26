@@ -66,7 +66,7 @@ export function interpretarComprobante(text,name='',zones={}){
  const issuerLines=String(zones.supplierText||'').split('\n').map(line).filter(Boolean);
  const issuerName=issuerLines.length?supplier(issuerLines):'';
  // Priorizar emisor desde su zona fisica, sin mezclarlo con el cliente.
- let proveedor=issuerName&&issuerName.length>=7?issuerName:supplier(topLines);
+ let proveedor=Object.prototype.hasOwnProperty.call(zones,'supplierText')?(issuerName&&issuerName.length>=7?issuerName:''):supplier(topLines);
  if(/^(?:S\.?R\.?L\.?|S\.?A\.?|LTDA\.?|SRL)$/i.test(proveedor.trim())){
    const comercial=topLines.find(x=>/\b(?:LA CHACRA AGROINSUMOS|AGROINSUMOS LA CHACRA)\b/i.test(x)&&!/RAZ[OÓ]N SOCIAL|CUIT|DOMICILIO/i.test(x));
    proveedor=comercial?line(comercial).replace(/\s+(?:A\s+FACTURA|FACTURA|PUNTO\s+DE\s+VENTA).*$/i,'').trim():'';
