@@ -64,7 +64,10 @@ export function interpretarComprobante(text,name='',zones={}){
  const mainLines=source.split('\n').map(line).filter(Boolean),headerLines=head.split('\n').map(line).filter(Boolean),tableLines=table.split('\n').map(line).filter(Boolean),sumLines=summary.split('\n').map(line).filter(Boolean);
  const all=source+'\n'+head+'\n'+table+'\n'+summary,lines=[...mainLines,...headerLines,...tableLines,...sumLines],topLines=[...headerLines,...mainLines];
  const tipo=docType(all),letra=docLetter(all,tipo),numero=docNumber(all),fecha=match(all,[/\bFECHA\s+DE\s+EMISI[OÓ]N\s*:?\s*(\d{2}[/-]\d{2}[/-]\d{4})/i,/\bFECHA\s*:\s*(\d{2}[/-]\d{2}[/-]\d{4})/i]);
- let proveedor=supplier(topLines);
+ const issuerLines=String(zones.supplierText||'').split('\n').map(line).filter(Boolean);
+ const issuerName=issuerLines.length?supplier(issuerLines):'';
+ // Priorizar emisor desde su zona fisica, sin mezclarlo con el cliente.
+ let proveedor=issuerName&&issuerName.length>=7?issuerName:supplier(topLines);
  if(/^(?:S\.?R\.?L\.?|S\.?A\.?|LTDA\.?|SRL)$/i.test(proveedor.trim())){
    const comercial=topLines.find(x=>/\b(?:LA CHACRA AGROINSUMOS|AGROINSUMOS LA CHACRA)\b/i.test(x)&&!/RAZ[OÓ]N SOCIAL|CUIT|DOMICILIO/i.test(x));
    proveedor=comercial?line(comercial).replace(/\s+(?:A\s+FACTURA|FACTURA|PUNTO\s+DE\s+VENTA).*$/i,'').trim():'';
