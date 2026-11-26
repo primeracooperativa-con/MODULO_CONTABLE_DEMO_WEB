@@ -63,8 +63,13 @@ export function interpretarComprobante(text,name='',zones={}){
  const mainLines=source.split('\n').map(line).filter(Boolean),headerLines=head.split('\n').map(line).filter(Boolean),tableLines=table.split('\n').map(line).filter(Boolean),sumLines=summary.split('\n').map(line).filter(Boolean);
  const all=source+'\n'+head+'\n'+table+'\n'+summary,lines=[...mainLines,...headerLines,...tableLines,...sumLines],topLines=[...headerLines,...mainLines];
  const tipo=docType(all),letra=docLetter(all,tipo),numero=docNumber(all),fecha=match(all,[/\bFECHA\s+DE\s+EMISI[OÓ]N\s*:?\s*(\d{2}[/-]\d{2}[/-]\d{4})/i,/\bFECHA\s*:\s*(\d{2}[/-]\d{2}[/-]\d{4})/i]);
+ function cleanIssuerName(raw){
+  const name=line(raw);
+  const legal=name.match(/^(.+?(?:\bS\.?\s*R\.?\s*L\.?|\bS\.?\s*A\.?|\bLTDA\.?))(?=\s|$)/i);
+  return legal?legal[1].trim():name;
+ }
  const issuerLines=String(zones.supplierText||'').split('\n').map(line).filter(Boolean);
- const issuerName=issuerLines.length?supplier(issuerLines):'';
+ const issuerName=issuerLines.length?cleanIssuerName(supplier(issuerLines)):'';
  // Priorizar emisor desde su zona fisica, sin mezclarlo con el cliente.
  let proveedor=Object.prototype.hasOwnProperty.call(zones,'supplierText')?(issuerName&&issuerName.length>=7?issuerName:''):supplier(topLines);
  if(/^(?:S\.?R\.?L\.?|S\.?A\.?|LTDA\.?|SRL)$/i.test(proveedor.trim())){
