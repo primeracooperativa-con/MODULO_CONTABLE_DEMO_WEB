@@ -64,8 +64,12 @@ export function interpretarComprobante(text,name='',zones={}){
  const mainLines=source.split('\n').map(line).filter(Boolean),headerLines=head.split('\n').map(line).filter(Boolean),tableLines=table.split('\n').map(line).filter(Boolean),sumLines=summary.split('\n').map(line).filter(Boolean);
  const all=source+'\n'+head+'\n'+table+'\n'+summary,lines=[...mainLines,...headerLines,...tableLines,...sumLines],topLines=[...headerLines,...mainLines];
  const tipo=docType(all),letra=docLetter(all,tipo),numero=docNumber(all),fecha=match(all,[/\bFECHA\s+DE\s+EMISI[OÓ]N\s*:?\s*(\d{2}[/-]\d{2}[/-]\d{4})/i,/\bFECHA\s*:\s*(\d{2}[/-]\d{2}[/-]\d{4})/i]);
- const proveedor=supplier(topLines);
- let cuits=[...all.matchAll(/\bCUIT\s*(?:NRO\.?\s*)?:?\s*(\d[\d\s-]{9,16}\d)/gi)].map(x=>x[1].replace(/\D/g,''));
+ let proveedor=supplier(topLines);
+ if(/^(?:S\.?R\.?L\.?|S\.?A\.?|LTDA\.?|SRL)$/i.test(proveedor.trim())){
+   const comercial=topLines.find(x=>/\b(?:LA CHACRA AGROINSUMOS|AGROINSUMOS LA CHACRA)\b/i.test(x)&&!/RAZ[OÓ]N SOCIAL|CUIT|DOMICILIO/i.test(x));
+   proveedor=comercial?line(comercial).replace(/\s+(?:A\s+FACTURA|FACTURA|PUNTO\s+DE\s+VENTA).*$/i,'').trim():'';
+ }
+ let cuits=[...new Set([...all.matchAll(/\bCUIT\s*(?:NRO\.?\s*)?:?\s*(\d[\d\s-]{9,16}\d)/gi)].map(x=>x[1].replace(/\D/g,'')).filter(x=>x.length===11))];
  let cuitInferido=false;if(cuits.length===1){
   let m=all.match(/INGRESOS\s+BRUTOS\s*:?\s*(\d[\d\s-]{9,16}\d)/i),v=m?m[1].replace(/\D/g,''):'';
   if(v.length===11&&v!==cuits[0]){cuits=[v,cuits[0]];cuitInferido=true;}
@@ -73,7 +77,7 @@ export function interpretarComprobante(text,name='',zones={}){
  const cae=match(all,[/\bCAE\s*(?:N[°º*]\s*)?:?\s*(\d{10,18})/i]);
  const cai=match(all,[/\bC\.?A\.?[I1l]\.?\s*(?:N[°º*]\s*)?:?\s*(\d{10,18})/i]);
  const fecha_vto_cae=match(all,[/VTO\.?\s+DE\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i,/VTO\.?\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i]);
- const moneda=/\bUSD\b|US\$|U\$S|DOLAR/i.test(all)?'USD':(/\$|\bARS\b|PESOS/i.test(all)?'ARS':'');
+ const moneda=tipo==='Remito'?'':(/\bUSD\b|US\$|U\$S|DOLAR/i.test(all)?'USD':(/\$|\bARS\b|PESOS/i.test(all)?'ARS':''));
  const arLines=mainLines;let articulos=tipo==='Remito'?remitoRows(arLines):tipo==='Ticket'?ticketRows(arLines):invoiceRows(arLines);
  const other=tipo==='Remito'?remitoRows(tableLines):tipo==='Ticket'?ticketRows(tableLines):invoiceRows(tableLines);if(other.length>articulos.length)articulos=other;
  const subtotal_bruto=byLabel(lines,/^SUBTOTAL\s*:?/i);
@@ -92,7 +96,14 @@ export function interpretarComprobante(text,name='',zones={}){
  const orden_compra=match(all,[/ORDEN\s+DE\s+COMPRA\s*(?:N[°º])?\s*:?\s*([A-Z0-9-]+)/i]);
  let condicion_venta=match(all,[/CONDICI[OÓ]N\s+DE\s+VENTA\s*:\s*([^\n]+)/i]);if(condicion_venta)condicion_venta=condicion_venta.split(/\s+FECHA\s+DE\s+VTO/i)[0].trim();
  if(!condicion_venta&&tipo==='Ticket')condicion_venta=match(all,[/\b(EFECTIVO|TARJ\.?\s*CREDITO|TARJETA\s+DE\s+CREDITO|TARJETA\s+DE\s+DEBITO|TRANSFERENCIA)\b/i]);
- const advertencias=[];if(!numero)advertencias.push('Número de comprobante no reconocido.');if(!fecha)advertencias.push('Fecha no reconocida.');if(!proveedor)advertencias.push('Proveedor no identificado.');
+ const advertencias=[];
+ if(proveedor===''&&tipo!=='No determinado')advertencias.push('Proveedor: no se identificó la razón social con seguridad.');
+ if(tipo==='Ticket'&&articulos.length&&total!=null&&articulos.every(a=>a.importe!=null)){
+  const suma=Math.round(articulos.reduce((a,b)=>a+b.importe,0)*100)/100;
+  if(Math.abs(suma-total)>.06)advertencias.push('La suma de artículos ('+suma.toFixed(2)+') no coincide con el total ('+total.toFixed(2)+'). Revisar también pagos y vuelto.');
+ }
+ if(tipo==='Factura'&&neto!=null&&iva!=null&&total==null)advertencias.push('Total no leído. No se completa automáticamente porque podrían faltar tributos o decimales.');
+ if(!numero)advertencias.push('Número de comprobante no reconocido.');if(!fecha)advertencias.push('Fecha no reconocida.');if(!proveedor)advertencias.push('Proveedor no identificado.');
  if(!articulos.length)advertencias.push('No se identificaron los renglones. Corregir manualmente y revisar el documento.');
  if(neto_estimado)advertencias.push('Neto calculado a partir de artículos y no leído directamente. Revisar.');
  if(cuitInferido)advertencias.push('CUIT del proveedor propuesto desde Ingresos Brutos: verificar con el original.');
