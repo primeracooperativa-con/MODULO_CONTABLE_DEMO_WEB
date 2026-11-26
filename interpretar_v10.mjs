@@ -51,7 +51,7 @@ function supplier(lines){
  return options.sort((a,b)=>b.length-a.length)[0]||'';
 }
 function docType(t){const a=norm(t);if(/\bREMITO\b/.test(a))return 'Remito';if(/\b(?:TIQUE|TICKET)\s+FACTURA\b|\bTICKET\b/.test(a))return 'Ticket';if(/\bFACTURA\b/.test(a))return 'Factura';if(/NOTA DE CREDITO/.test(a))return 'Nota de crédito';if(/NOTA DE DEBITO/.test(a))return 'Nota de débito';return 'No determinado'}
-function docLetter(t,type){if(type==='Remito')return '';let a=norm(t);let m=a.match(/(?:TIQUE|TICKET)\s+FACTURA\s*["']?\s*([ABCE])/);if(m)return m[1];m=a.match(/(?:^|\n)\s*([ABCE])\s*(?:\|\s*)?(?:COD\.?\s*\d+\s*)?FACTURA\b/);if(m)return m[1];const c=a.match(/\bCOD\.?\s*(01|06|11|19)\b/);return c?({'01':'A','06':'B','11':'C','19':'E'})[c[1]]):''}
+function docLetter(t,type){if(type==='Remito')return '';let a=norm(t);let m=a.match(/(?:TIQUE|TICKET)\s+FACTURA\s*["']?\s*([ABCE])/);if(m)return m[1];m=a.match(/(?:^|\n)\s*([ABCE])\s*(?:\|\s*)?(?:COD\.?\s*\d+\s*)?FACTURA\b/);if(m)return m[1];const c=a.match(/\bCOD\.?\s*(01|06|11|19)\b/);return c?({'01':'A','06':'B','11':'C','19':'E'})[c[1]]:''}
 function docNumber(t){
  let m=t.match(/(?:PUNTO\s+DE\s+VENTA|PTO\.?\s*VENTA)\s*:?\s*(\d{1,5})\s+(?:COMP\.?\s*NRO\.?|CPBTE\.?\s*NRO\.?)\s*:?\s*(\d{4,12})/i);
  if(!m)m=t.match(/P\.?V\.?\s*NRO\.?\s*:?\s*(\d{1,5})\s+NRO\.?\s*T\.?\s*:?\s*(\d{4,12})/i);
