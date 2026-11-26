@@ -75,6 +75,24 @@ async function photoZone(file,a,b,style='gray'){
  }
  ctx.putImageData(img,0,0);return canvas;
 }
+// OCR sobre el bloque fisico del emisor (arriba, a la izquierda).
+// Evita confundir la razon social del comprador con la del proveedor.
+async function photoIssuerRegion(file){
+ const bitmap=await createImageBitmap(file);
+ const x=Math.floor(bitmap.width*.075),y=Math.floor(bitmap.height*.063);
+ const w=Math.min(bitmap.width-x,Math.max(1,Math.round(bitmap.width*.447)));
+ const h=Math.min(bitmap.height-y,Math.max(1,Math.round(bitmap.height*.165)));
+ const scale=Math.max(1,Math.min(2.2,2200/w,1800/h));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(bitmap,x,y,w,h,0,0,canvas.width,canvas.height);bitmap.close?.();
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+ for(let i=0;i<data.data.length;i+=4){const g=Math.round(.299*data.data[i]+.587*data.data[i+1]+.114*data.data[i+2]);data.data[i]=data.data[i+1]=data.data[i+2]=g;data.data[i+3]=255;}
+ ctx.putImageData(data,0,0);return canvas;
+}
 async function readImage(file){
  status('OCR: leyendo cabecera, renglones y totales por separado...');
  const worker=await makeOcrWorker();
@@ -87,7 +105,15 @@ async function readImage(file){
   status('OCR: cotejando importes...');
   await worker.setParameters({tessedit_pageseg_mode:'3'});
   const summary=(await worker.recognize(await photoZone(file,.63,1,'adaptive'))).data;
-  let headerText=full.text||'',summaryText=summary.text||'';
+  let headerText=full.text||'',summaryText=summary.text||'',supplierText='';
+  // La ubicacion del emisor es evidencia: no alcanza con detectar la frase 'razon social'.
+  const initialType=interpretarComprobante(full.text||'','imagen').tipo;
+  if(initialType==='Factura'||initialType==='Remito'){
+   status('OCR: separando los datos del proveedor de los datos del cliente...');
+   await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+   const issuer=(await worker.recognize(await photoIssuerRegion(file))).data;
+   supplierText=issuer.text||'';
+  }
   const prelim=interpretarComprobante(full.text||'','imagen',{tableText:table.text||'',summaryText});
   if(!prelim.numero||!prelim.fecha||!prelim.proveedor||prelim.proveedor.length<8){
    status('OCR: verificando por separado el encabezado de la fotografía...');
@@ -101,14 +127,14 @@ async function readImage(file){
    const foot=(await worker.recognize(await photoZone(file,.66,.94,'gray'))).data;
    summaryText+='\n'+(foot.text||'');
   }
-  return {text:full.text||'',tableText:table.text||'',summaryText,headerText,method:'OCR por zonas con revisión de cabecera y totales',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
+  return {text:full.text||'',tableText:table.text||'',summaryText,headerText,supplierText,method:'OCR por zonas con revisión de cabecera y totales',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
  }finally{await worker.terminate();}
 }
 $('read').onclick=async()=>{if(!selected||busy)return;busy=true;$('read').disabled=true;$('sample').disabled=true;prog(3);status('Preparando reconocimiento...');try{
   const isPdf=selected.type==='application/pdf'||/\.pdf$/i.test(selected.name);
   const output=isPdf?await readPdf(selected):await readImage(selected);
   if(!output.text.trim())throw new Error('No se reconoció texto en el archivo. Podés probar otra imagen más nítida.');
-  current=interpretarComprobante(output.text,selected.name,{tableText:output.tableText||'',summaryText:output.summaryText||'',headerText:output.headerText||''});current.metodo=output.method;current.paginas=output.pages;if(output.truncated)current.advertencias.push('Se procesaron solo las primeras 6 páginas de este PDF.');
+  current=interpretarComprobante(output.text,selected.name,{tableText:output.tableText||'',summaryText:output.summaryText||'',headerText:output.headerText||'',supplierText:output.supplierText||''});current.metodo=output.method;current.paginas=output.pages;if(output.truncated)current.advertencias.push('Se procesaron solo las primeras 6 páginas de este PDF.');
   if(output.confidence!=null&&output.confidence<55)current.advertencias.push('Lectura OCR con baja confianza. Verificá cada dato contra la imagen.');
   render();
   if(current.articulos.length===0)status('Se reconoció texto, pero no se pudieron identificar artículos. Abrí «Ver texto extraído» y corregí los campos o agregá artículos.','warning');
