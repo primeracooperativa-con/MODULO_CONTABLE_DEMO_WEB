@@ -16,11 +16,52 @@ function invoiceRows(lines){
  }return out;
 }
 function remitoRows(lines){
- let out=[];for(let raw of lines){const t=line(raw).split(' ');if(t.length<4||!/^[A-Z0-9][A-Z0-9./_-]{1,16}$/i.test(t[0]))continue;
-  if(!/^\d+(?:[.,]\d+)?$/.test(t[1])&&!/^[aIl]$/.test(t[1]))continue;
-  if(!units.has(norm(t[2])))continue;let q=/^[aIl]$/.test(t[1])?1:numberValue(t[1]),desc=t.slice(3).join(' ');
-  if(!desc||q==null)continue;let r=aRow(t[0],desc,q,t[2]);if(/^[aIl]$/.test(t[1]))r.advertencia_ocr='Cantidad posiblemente confundida con 1 por OCR. Verificar.';out.push(r);
- }return out;
+ let out=[];for(const raw of lines){
+  const t=line(raw).split(' ');if(t.length<4||!/^[A-Z0-9][A-Z0-9./_-]{1,16}$/i.test(t[0]))continue;
+  if(!units.has(norm(t[2])))continue;
+  const legible=/^\d+(?:[.,]\d+)?$/.test(t[1]);
+  const ambiguous=/^[aIl]$/.test(t[1]);
+  const q=legible?numberValue(t[1]):ambiguous?1:null;
+  const desc=t.slice(3).join(' ');
+  if(!desc||desc.length<5)continue;
+  const row=aRow(t[0],desc,q,t[2]);
+  if(ambiguous)row.advertencia_ocr='Cantidad OCR interpretada como 1 a partir de una letra. Confirmá con el original.';
+  if(!legible&&!ambiguous){
+   row.advertencia_ocr='Cantidad ilegible en OCR (se leyó: '+t[1]+'). Se conserva el artículo para revisión.';
+  }
+  out.push(row);
+ }
+ return out;
+}
+function mergeRemitoRows(groups){
+ const result=[];
+ const tokens=x=>norm(x).replace(/[^A-Z0-9 ]/g,' ').split(/\s+/).filter(Boolean);
+ const isSame=(a,b)=>{
+  const ca=norm(a.codigo_proveedor||''),cb=norm(b.codigo_proveedor||'');
+  if(ca.length>=4&&cb.length>=4&&(ca===cb||ca.startsWith(cb)||cb.startsWith(ca)))return true;
+  const aa=tokens(a.descripcion),bb=tokens(b.descripcion);
+  if(aa.length<3||bb.length<3)return false;
+  const overlap=aa.filter(x=>bb.includes(x)).length;
+  return overlap/Math.max(aa.length,bb.length)>=.78;
+ };
+ for(const group of groups){
+  for(const row of remitoRows(group)){
+   const i=result.findIndex(x=>isSame(x,row));
+   if(i<0){result.push(row);continue;}
+   const prev=result[i];
+   if(row.codigo_proveedor.length>prev.codigo_proveedor.length)prev.codigo_proveedor=row.codigo_proveedor;
+   if(row.descripcion.length>prev.descripcion.length)prev.descripcion=row.descripcion;
+   if(prev.cantidad==null&&row.cantidad!=null){
+    prev.cantidad=row.cantidad;
+    prev.unidad=row.unidad;
+    prev.advertencia_ocr='Cantidad recuperada con otra lectura OCR. Comprobá el dato contra el remito.';
+   } else if(prev.cantidad!=null&&row.cantidad!=null&&prev.cantidad!==row.cantidad){
+    prev.cantidad=null;
+    prev.advertencia_ocr='Lecturas OCR contradictorias de la cantidad. Revisá el original.';
+   }
+  }
+ }
+ return result;
 }
 function ticketRows(lines){
  let out=[];for(let i=0;i<lines.length-1;i++){
@@ -85,8 +126,10 @@ export function interpretarComprobante(text,name='',zones={}){
  const cai=match(all,[/\bC\.?A\.?[I1l]\.?\s*(?:N[°º*]\s*)?:?\s*(\d{10,18})/i]);
  const fecha_vto_cae=match(all,[/VTO\.?\s+DE\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i,/VTO\.?\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i]);
  const moneda=tipo==='Remito'?'':(/\bUSD\b|US\$|U\$S|DOLAR/i.test(all)?'USD':(/\$|\bARS\b|PESOS/i.test(all)?'ARS':''));
- const arLines=mainLines;let articulos=tipo==='Remito'?remitoRows(arLines):tipo==='Ticket'?ticketRows(arLines):invoiceRows(arLines);
- const other=tipo==='Remito'?remitoRows(tableLines):tipo==='Ticket'?ticketRows(tableLines):invoiceRows(tableLines);if(other.length>articulos.length)articulos=other;
+ const arLines=mainLines;
+ let articulos=tipo==='Remito'?mergeRemitoRows([mainLines,tableLines]):tipo==='Ticket'?ticketRows(arLines):invoiceRows(arLines);
+ const other=tipo==='Ticket'?ticketRows(tableLines):tipo==='Factura'?invoiceRows(tableLines):[];
+ if(other.length>articulos.length)articulos=other;
  const subtotal_bruto=byLabel(lines,/^SUBTOTAL\s*:?/i);
  let neto=byLabel(lines,/IMPORTE\s+NETO\s+GRAVADO\s*:?/i),neto_estimado=false;
  const total=byLabel(lines,/(?:IMPORTE\s+TOTAL|^TOTAL)\s*:?/i),iva_contenido=byLabel(lines,/IVA\s+CONTENIDO\s*:?/i);
@@ -112,6 +155,7 @@ export function interpretarComprobante(text,name='',zones={}){
  if(tipo==='Factura'&&neto!=null&&iva!=null&&total==null)advertencias.push('Total no leído. No se completa automáticamente porque podrían faltar tributos o decimales.');
  if(!numero)advertencias.push('Número de comprobante no reconocido.');if(!fecha)advertencias.push('Fecha no reconocida.');if(!proveedor)advertencias.push('Proveedor no identificado.');
  if(!articulos.length)advertencias.push('No se identificaron los renglones. Corregir manualmente y revisar el documento.');
+ if(tipo==='Remito'&&articulos.some(a=>a.cantidad==null))advertencias.push('Uno o más artículos tienen cantidades ilegibles. Completalas antes de revisar el remito.');
  if(neto_estimado)advertencias.push('Neto calculado a partir de artículos y no leído directamente. Revisar.');
  if(cuitInferido)advertencias.push('CUIT del proveedor propuesto desde Ingresos Brutos: verificar con el original.');
  if(tipo==='Remito')advertencias.push('Remito: los precios e importes se mantienen vacíos.');
