@@ -87,7 +87,21 @@ async function readImage(file){
   status('OCR: cotejando importes...');
   await worker.setParameters({tessedit_pageseg_mode:'3'});
   const summary=(await worker.recognize(await photoZone(file,.63,1,'adaptive'))).data;
-  return {text:full.text||'',tableText:table.text||'',summaryText:summary.text||'',headerText:full.text||'',method:'OCR por zonas (imagen)',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
+  let headerText=full.text||'',summaryText=summary.text||'';
+  const prelim=interpretarComprobante(full.text||'','imagen',{tableText:table.text||'',summaryText});
+  if(!prelim.numero||!prelim.fecha||!prelim.proveedor||prelim.proveedor.length<8){
+   status('OCR: verificando por separado el encabezado de la fotografía...');
+   await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+   const head=(await worker.recognize(await photoZone(file,0,.36,'gray'))).data;
+   headerText+='\n'+(head.text||'');
+  }
+  if(prelim.total==null){
+   status('OCR: verificando por separado el cuadro de totales...');
+   await worker.setParameters({tessedit_pageseg_mode:'6'});
+   const foot=(await worker.recognize(await photoZone(file,.66,.94,'gray'))).data;
+   summaryText+='\n'+(foot.text||'');
+  }
+  return {text:full.text||'',tableText:table.text||'',summaryText,headerText,method:'OCR por zonas con revisión de cabecera y totales',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
  }finally{await worker.terminate();}
 }
 $('read').onclick=async()=>{if(!selected||busy)return;busy=true;$('read').disabled=true;$('sample').disabled=true;prog(3);status('Preparando reconocimiento...');try{
