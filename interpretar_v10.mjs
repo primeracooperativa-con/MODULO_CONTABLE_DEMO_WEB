@@ -40,8 +40,7 @@ function supplier(lines){
  const i=lines.findIndex(x=>/RAZ[OÓ]N\s+SOCIAL\s*:/i.test(x));
  if(i>=0){let v=lines.slice(i,i+3).join(' ').replace(/^.*?RAZ[OÓ]N\s+SOCIAL\s*:\s*/i,'');
    v=v.split(/\s+(?:PUNTO\s+DE\s+VENTA|COMP\.?\s*NRO|FECHA\s+DE\s+EMISI[OÓ]N|DOMICILIO|CUIT\s*:)/i)[0].trim();
-   v=v.replace(/\bAGROINSU\s+RL\s+MOS\b/i,'AGROINSUMOS').replace(/\s+mor\b/i,'');
-   if(/AGROINSUMOS LA CHACRA DE PRUEBA$/i.test(v))v+=' S.R.L.';
+   v=v.replace(/\bS\.?\s*R\.?\s*L\.?\b\.?/gi,'S.R.L.').replace(/\bS\.?\s*A\.?\b\.?/gi,'S.A.');
    const next=lines[i+1]||'';if(/^S\.?A\.?\b/i.test(next)&&!/S\.?A\.?$/i.test(v))v+=' S.A.';
    return line(v);
  }
