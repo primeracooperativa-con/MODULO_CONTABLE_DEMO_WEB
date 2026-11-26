@@ -74,7 +74,7 @@ export function interpretarComprobante(text,name='',zones={}){
  const cai=match(all,[/\bC\.?A\.?[I1l]\.?\s*(?:N[°º*]\s*)?:?\s*(\d{10,18})/i]);
  const fecha_vto_cae=match(all,[/VTO\.?\s+DE\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i,/VTO\.?\s+CAE\s*:\s*(\d{2}\/\d{2}\/\d{4})/i]);
  const moneda=/\bUSD\b|US\$|U\$S|DOLAR/i.test(all)?'USD':(/\$|\bARS\b|PESOS/i.test(all)?'ARS':'');
- const arLines=[...mainLines,...tableLines];let articulos=tipo==='Remito'?remitoRows(arLines):tipo==='Ticket'?ticketRows(arLines):invoiceRows(arLines);
+ const arLines=mainLines;let articulos=tipo==='Remito'?remitoRows(arLines):tipo==='Ticket'?ticketRows(arLines):invoiceRows(arLines);
  const other=tipo==='Remito'?remitoRows(tableLines):tipo==='Ticket'?ticketRows(tableLines):invoiceRows(tableLines);if(other.length>articulos.length)articulos=other;
  const subtotal_bruto=byLabel(lines,/^SUBTOTAL\s*:?/i);
  let neto=byLabel(lines,/IMPORTE\s+NETO\s+GRAVADO\s*:?/i),neto_estimado=false;
