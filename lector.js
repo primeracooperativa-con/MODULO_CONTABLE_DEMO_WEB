@@ -75,6 +75,21 @@ async function photoZone(file,a,b,style='gray'){
  }
  ctx.putImageData(img,0,0);return canvas;
 }
+// Recorte de tabla con escala calculada sobre la region, no sobre la pagina completa.
+async function photoTableZone(file,a,b){
+ const bitmap=await createImageBitmap(file);
+ const top=Math.floor(bitmap.height*a),height=Math.max(1,Math.floor(bitmap.height*b)-top);
+ const scale=Math.min(2.2,2800/bitmap.width,2800/height);
+ const width=Math.max(1,Math.round(bitmap.width*scale)),outHeight=Math.max(1,Math.round(height*scale));
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=outHeight;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,width,outHeight);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(bitmap,0,top,bitmap.width,height,0,0,width,outHeight);bitmap.close?.();
+ const image=ctx.getImageData(0,0,width,outHeight),pixels=image.data;
+ for(let i=0;i<pixels.length;i+=4){const gray=Math.round(.299*pixels[i]+.587*pixels[i+1]+.114*pixels[i+2]);pixels[i]=pixels[i+1]=pixels[i+2]=gray;pixels[i+3]=255;}
+ ctx.putImageData(image,0,0);return canvas;
+}
 // OCR sobre el bloque fisico del emisor (arriba, a la izquierda).
 // Evita confundir la razon social del comprador con la del proveedor.
 async function photoIssuerRegion(file){
@@ -116,11 +131,13 @@ async function readImage(file){
   }
   let tableText=table.text||'';
   const prelim=interpretarComprobante(full.text||'','imagen',{tableText,summaryText});
-  if(initialType==='Remito'&&(!prelim.articulos.length||prelim.articulos.some(a=>a.cantidad==null))){
-   status('OCR: comprobando cantidades dudosas de la tabla del remito...');
+  const detectedCodes=[...new Set((full.text+'\n'+tableText).match(/\b[A-Z0-9]{1,10}-[A-Z0-9]{1,10}[)\]]?/gi)||[])].filter(code=>/[A-Z]/i.test(code));
+  const missingCodeRows=detectedCodes.length>prelim.articulos.length;
+  if(initialType==='Remito'&&(missingCodeRows||!prelim.articulos.length||prelim.articulos.some(a=>a.cantidad==null))){
+   status(missingCodeRows?'OCR: se detectaron códigos sin renglón; releyendo la tabla completa...':'OCR: comprobando cantidades dudosas de la tabla del remito...');
    try{
     await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
-    const focused=(await worker.recognize(await photoZone(file,.295,.465,'gray'))).data;
+    const focused=(await worker.recognize(await photoTableZone(file,.29,.49))).data;
     tableText+='\n'+(focused.text||'');
    }catch(e){console.warn('No se pudo completar la segunda lectura de la tabla',e);}
   }
@@ -136,7 +153,7 @@ async function readImage(file){
    const foot=(await worker.recognize(await photoZone(file,.66,.94,'gray'))).data;
    summaryText+='\n'+(foot.text||'');
   }
-  return {text:full.text||'',tableText,summaryText,headerText,supplierText,method:'OCR por zonas con revisión de cabecera y totales',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
+  return {text:full.text||'',tableText,summaryText,headerText,supplierText,method:'OCR por zonas con segunda lectura de tabla cuando faltan renglones',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
  }finally{await worker.terminate();}
 }
 $('read').onclick=async()=>{if(!selected||busy)return;busy=true;$('read').disabled=true;$('sample').disabled=true;prog(3);status('Preparando reconocimiento...');try{
