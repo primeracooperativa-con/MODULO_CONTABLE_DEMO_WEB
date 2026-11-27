@@ -218,6 +218,7 @@ function suggestions(docId){
 }
 function handleSubmit(form){
  const action=form.dataset.submit,fd=new FormData(form),v=Object.fromEntries(fd.entries());
+ if(action==="close-modal"){closeModal();return;}
  if(action==="save-doc"){
   const d={id:"DC-"+String(data.docs.length+1).padStart(3,"0"),type:v.type,number:v.number,date:v.date,supplier:v.supplier,total:v.total?Number(v.total):null,currency:v.currency,status:v.status,sector:v.sector,operation:"",items:0};
   data.docs.unshift(d);save();closeModal();render();toast("Comprobante agregado a la bandeja de demostración.");return;
