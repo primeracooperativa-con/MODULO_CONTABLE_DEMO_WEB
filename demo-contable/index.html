@@ -135,13 +135,68 @@ function renderPurchaseDetail(){
  document.getElementById("content").innerHTML=header("Detalle de compra","Operación "+x.id+" · "+esc(x.supplier),btn("← Volver a compras","back-purchases",""))+'<div class="card"><div class="detail-top"><div><h2>'+x.id+' · '+esc(x.description)+'</h2><p class="muted small">'+x.sectors.map(esc).join(" / ")+'</p></div>'+tag(x.status)+'</div><div class="tabs">'+tabs.map(t=>'<button data-detail-tab="'+t+'" class="'+(detailTab===t?"active":"")+'">'+t+'</button>').join("")+'</div>'+body+'</div>';
  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="compras"));
 }
+function readerDateToISO(value){
+ const s=String(value||'').trim(),m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+ if(m)return m[3]+'-'+m[2]+'-'+m[1];
+ return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:s;
+}
+function normalizeDocKey(value){
+ return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+}
+function readerTypeLabel(r){
+ const type=String(r.tipo||'Comprobante').trim(),letter=String(r.letra||'').trim();
+ if(type.toLowerCase()==='factura'&&letter)return 'Factura '+letter;
+ if(type.toLowerCase()==='remito')return 'Remito '+(letter||'R');
+ return type;
+}
+function importReaderJSON(file){
+ if(!file)return;
+ if(file.size>5*1024*1024){toast("El JSON supera 5 MB. Exportá nuevamente la lectura desde el lector.");return;}
+ file.text().then(raw=>{
+  let r;
+  try{r=JSON.parse(raw)}catch(e){throw new Error("El archivo no contiene un JSON válido.")}
+  if(!r||r.ambiente!=="DEMO"||r.no_registra_stock!==true||r.no_contabiliza!==true||!Array.isArray(r.articulos)||!String(r.tipo||"").trim()){
+   throw new Error("El archivo no parece una exportación DEMO válida del lector V16.1.");
+  }
+  const type=readerTypeLabel(r),number=String(r.numero||"Sin número").trim(),supplier=String(r.proveedor||"Proveedor pendiente de identificar").trim();
+  const supplierKey=normalizeDocKey(supplier),typeKey=normalizeDocKey(type),numberKey=normalizeDocKey(number);
+  const duplicate=data.docs.find(d=>normalizeDocKey(d.type)===typeKey&&normalizeDocKey(d.number)===numberKey&&supplierKey&&normalizeDocKey(d.supplier)===supplierKey);
+  const sectorsFound=[...new Set(r.articulos.map(a=>String(a.sector||"").trim()).filter(x=>x&&x!=="Pendiente"&&x!=="Por determinar"))];
+  const sector=sectorsFound.length===1?sectorsFound[0]:sectorsFound.length>1?"Varios sectores":"Pendiente de asignar";
+  const record={
+   type:type,number:number,date:readerDateToISO(r.fecha),supplier:supplier,total:r.total==null?null:Number(r.total),
+   currency:r.moneda||"No determinada",sector:sector,items:r.articulos.length,status:"Por revisar",
+   source:"Lector V16.1",readerFilename:String(r.nombre_archivo||file.name),readerReviewed:!!r.revisado_local,
+   readerData:r,cuit_proveedor:r.cuit_proveedor||"",operation:""
+  };
+  if(duplicate){
+   if(duplicate.readerData){toast("Este comprobante ya tiene una lectura importada. No se creó un duplicado.");return;}
+   Object.assign(duplicate,record,{id:duplicate.id,operation:duplicate.operation||""});
+   if(duplicate.status==="Validado"||duplicate.status==="Vinculado")record.status=duplicate.status;
+   Object.assign(duplicate,record,{id:duplicate.id,operation:duplicate.operation||""});
+   save();renderDocs();toast("Lectura incorporada al comprobante existente "+duplicate.id+". No se creó un duplicado.");return;
+  }
+  const nextId=Math.max(0,...data.docs.map(d=>Number(String(d.id||"").replace(/\D/g,""))||0))+1;
+  data.docs.unshift(Object.assign({id:"DC-"+String(nextId).padStart(3,"0")},record));
+  save();renderDocs();toast("Lectura incorporada a la bandeja como pendiente de validación contable.");
+ }).catch(e=>toast(e.message||"No se pudo importar el JSON."));
+}
+function viewReaderDocument(id){
+ const d=data.docs.find(x=>x.id===id);if(!d||!d.readerData){toast("Este comprobante no tiene una lectura del lector importada.");return;}
+ const r=d.readerData,items=Array.isArray(r.articulos)?r.articulos:[];
+ const rows=items.map(a=>'<tr><td>'+esc(a.codigo_proveedor||a.codigo_generico||"—")+'</td><td>'+esc(a.descripcion||"—")+'</td><td>'+esc(a.cantidad??"—")+'</td><td>'+esc(a.unidad||"—")+'</td><td>'+(a.precio_unitario==null?"—":money(a.precio_unitario))+'</td><td>'+esc(a.sector||"Pendiente")+'</td></tr>').join("");
+ const warnings=(r.advertencias||[]).length?'<div class="notice warn"><strong>Advertencias del lector</strong><ul>'+r.advertencias.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div>':'';
+ const body='<div class="notice info"><strong>Importación desde Lector V16.1</strong>El resultado se conserva como lectura pendiente de validación contable. El PDF/foto original no se adjunta en esta demo; se conserva el nombre del archivo y los datos exportados.</div><div class="kv"><div><label>Tipo y número</label><strong>'+esc(d.type)+' '+esc(d.number)+'</strong></div><div><label>Fecha</label><strong>'+date(d.date)+'</strong></div><div><label>Proveedor</label><strong>'+esc(d.supplier)+'</strong></div><div><label>CUIT proveedor</label><strong>'+esc(r.cuit_proveedor||"—")+'</strong></div><div><label>Total</label><strong>'+(d.total==null?"—":money(d.total))+'</strong></div><div><label>Archivo original</label><strong>'+esc(d.readerFilename||"—")+'</strong></div></div><div style="margin-top:14px"><strong>Artículos interpretados · '+items.length+'</strong></div>'+table(["Código","Descripción","Cantidad","Unidad","Precio unitario","Sector"],rows||'<tr><td colspan="6">Sin artículos interpretados</td></tr>')+warnings;
+ modal("Lectura importada · "+d.id,body,"Cerrar","close-modal");
+}
 function renderDocs(){
- const rows=data.docs.map(d=>'<tr><td><span class="main-text">'+esc(d.type)+'</span><span class="sub-text">'+esc(d.number)+'</span></td><td>'+esc(d.supplier)+'</td><td>'+date(d.date)+'</td><td>'+(d.total===null?"—":money(d.total))+'</td><td>'+esc(d.sector)+'</td><td>'+tag(d.status)+'</td><td><button class="link-btn" data-action="doc-suggest" data-doc="'+d.id+'">Vínculos</button></td></tr>').join("");
- const body='<div class="notice info"><strong>Lector automático separado</strong>La demo representa el circuito contable. El lector V16.1 sigue siendo una herramienta experimental independiente; abrirlo no envía documentos a esta demo ni integra automáticamente los resultados.</div><div class="toolbar"><div class="search"><input id="doc-search" placeholder="Buscar proveedor, número o tipo..."></div><select id="doc-status"><option value="">Todos los estados</option><option>Por revisar</option><option>Validado</option><option>Vinculado</option></select></div><div class="card">'+table(["Comprobante","Proveedor","Fecha","Total","Sector","Estado","Relaciones"],rows)+'</div>';
- pageShell("Comprobantes","Registro, revisión y vinculación de facturas, remitos, tickets y otros documentos.",btn("＋ Registrar comprobante","new-doc","primary"),body);
- const q=document.getElementById("doc-search"),f=document.getElementById("doc-status");
- function filter(){document.querySelectorAll("#content tbody tr").forEach((tr,i)=>{const d=data.docs[i];tr.style.display=(!q.value||(d.supplier+" "+d.number+" "+d.type).toLowerCase().includes(q.value.toLowerCase()))&&(!f.value||d.status===f.value)?"":"none"})}
+ const rows=data.docs.map(d=>'<tr><td><span class="main-text">'+esc(d.type)+'</span><span class="sub-text">'+esc(d.number)+(d.source?' · '+esc(d.items)+' renglón(es) · '+esc(d.source):'')+'</span></td><td>'+esc(d.supplier)+'</td><td>'+date(d.date)+'</td><td>'+(d.total===null?"—":money(d.total))+'</td><td>'+esc(d.sector)+'</td><td>'+tag(d.status)+'</td><td>'+(d.readerData?'<button class="link-btn" data-action="doc-view" data-doc="'+d.id+'">Ver lectura</button> ':'')+'<button class="link-btn" data-action="doc-suggest" data-doc="'+d.id+'">Vínculos</button></td></tr>').join("");
+ const body='<div class="notice info"><strong>Lector V16.1 integrado en Comprobantes</strong>Cargá el PDF o la imagen en el lector, revisá los campos y artículos y presioná «Exportar JSON». Después importá ese JSON aquí para incorporar la lectura a la bandeja. La importación no valida contablemente ni registra stock.</div><div class="card"><div class="card-head"><div><h2>Lector de comprobantes V16.1</h2><p>Se utiliza el lector existente, sin modificar su código ni sus reglas.</p></div><a class="btn small" href="../index.html" target="_blank" rel="noopener">Abrir en otra pestaña ↗</a></div><iframe title="Lector de comprobantes V16.1" src="../index.html" style="display:block;width:100%;height:1320px;border:1px solid var(--line);border-radius:9px;background:#fff"></iframe></div><div class="card"><div class="card-head"><div><h2>Incorporar lectura a la bandeja</h2><p>Seleccioná el archivo JSON que descargaste desde el lector.</p></div></div><div class="notice warn"><strong>Importante</strong>Se incorpora la información interpretada y corregida, no el PDF o la foto original. Conservá el comprobante original en el archivo documental institucional.</div><input id="reader-json" type="file" accept=".json,application/json" style="display:none"><div class="actions"><button class="btn primary" data-action="pick-reader-json">＋ Importar lectura JSON</button></div></div><div class="toolbar"><div class="search"><input id="doc-search" placeholder="Buscar proveedor, número o tipo..."></div><select id="doc-status"><option value="">Todos los estados</option><option>Por revisar</option><option>Validado</option><option>Vinculado</option></select></div><div class="card">'+table(["Comprobante","Proveedor","Fecha","Total","Sector","Estado","Relaciones"],rows)+'</div>';
+ pageShell("Comprobantes","Carga con el lector existente, incorporación de lecturas y seguimiento documental.",btn("＋ Registro manual","new-doc",""),body);
+ const q=document.getElementById("doc-search"),f=document.getElementById("doc-status"),jsonInput=document.getElementById("reader-json");
+ function filter(){document.querySelectorAll("#content .table-wrap tbody tr").forEach((tr,i)=>{const d=data.docs[i];if(!d)return;tr.style.display=(!q.value||(d.supplier+" "+d.number+" "+d.type).toLowerCase().includes(q.value.toLowerCase()))&&(!f.value||d.status===f.value)?"":"none"})}
  q.addEventListener("input",filter);f.addEventListener("change",filter);
+ jsonInput.addEventListener("change",e=>{const file=e.target.files&&e.target.files[0];if(file)importReaderJSON(file);e.target.value=""});
 }
 function renderArticles(){
  const rows=data.articles.map(a=>'<tr><td><span class="main-text">'+esc(a.code)+'</span></td><td>'+esc(a.name)+'</td><td>'+esc(a.unit)+'</td><td>'+a.sectors.map(esc).join(" / ")+'</td><td>'+tag(a.status)+'</td><td>'+(a.price?money(a.price):"—")+'</td></tr>').join("");
@@ -274,6 +329,8 @@ document.addEventListener("click",function(e){
  if(act==="new-service")newService();
  if(act==="new-imputation")newImputation(a.dataset.operation);
  if(act==="edit-imputation"){const im=data.imputations.find(x=>x.id===a.dataset.id);if(im)toast("La imputación "+im.id+" está disponible para consulta; edición detallada pendiente en esta demo.")}
+ if(act==="pick-reader-json"){const input=document.getElementById("reader-json");if(input)input.click()}
+ if(act==="doc-view")viewReaderDocument(a.dataset.doc);
  if(act==="doc-suggest")suggestions(a.dataset.doc);
  if(act==="suggest-link"){const x=data.purchases.find(x=>x.id===detailId);if(x){const d=data.docs.find(d=>d.id===x.docs[0]);if(d)suggestions(d.id);else toast("Esta operación no tiene comprobantes para sugerir.")}}
  if(act==="confirm-link"){const d=data.docs.find(x=>x.id===a.dataset.doc),p=data.purchases.find(x=>x.id===a.dataset.operation);if(d&&p){if(!p.docs.includes(d.id))p.docs.push(d.id);d.operation=p.id;d.status="Vinculado";p.history.unshift(date(new Date().toISOString().slice(0,10))+" · Documento "+d.id+" vinculado manualmente por usuario demo");save();closeModal();render();toast("Vínculo confirmado en la demo.")}}
