@@ -131,15 +131,20 @@ async function readImage(file){
   }
   let tableText=table.text||'';
   const prelim=interpretarComprobante(full.text||'','imagen',{tableText,summaryText});
-  const detectedCodes=[...new Set((full.text+'\n'+tableText).match(/\b[A-Z0-9]{1,10}-[A-Z0-9]{1,10}[)\]]?/gi)||[])].filter(code=>/[A-Z]/i.test(code));
-  const missingCodeRows=detectedCodes.length>prelim.articulos.length;
-  if(initialType==='Remito'&&(missingCodeRows||!prelim.articulos.length||prelim.articulos.some(a=>a.cantidad==null))){
-   status(missingCodeRows?'OCR: se detectaron códigos sin renglón; releyendo la tabla completa...':'OCR: comprobando cantidades dudosas de la tabla del remito...');
+  let tableFocusText='';
+  let tableFocusError='';
+  if(initialType==='Remito'){
+   status('OCR: leyendo siempre la tabla completa en un recorte de alta resolución...');
    try{
     await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
     const focused=(await worker.recognize(await photoTableZone(file,.29,.49))).data;
-    tableText+='\n'+(focused.text||'');
-   }catch(e){console.warn('No se pudo completar la segunda lectura de la tabla',e);}
+    tableFocusText=focused.text||'';
+    if(tableFocusText.trim())tableText+='\n'+tableFocusText;
+    else tableFocusError='La segunda lectura de la tabla no devolvió texto.';
+   }catch(e){
+    tableFocusError='No se pudo completar la segunda lectura focalizada de la tabla.';
+    console.warn(tableFocusError,e);
+   }
   }
   if(!prelim.numero||!prelim.fecha||!prelim.proveedor||prelim.proveedor.length<8){
    status('OCR: verificando por separado el encabezado de la fotografía...');
@@ -153,14 +158,14 @@ async function readImage(file){
    const foot=(await worker.recognize(await photoZone(file,.66,.94,'gray'))).data;
    summaryText+='\n'+(foot.text||'');
   }
-  return {text:full.text||'',tableText,summaryText,headerText,supplierText,method:'OCR por zonas con segunda lectura de tabla cuando faltan renglones',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
+  return {text:full.text||'',tableText,tableFocusText,tableFocusError,summaryText,headerText,supplierText,method:'OCR por zonas con segunda lectura focalizada de tabla para remitos',pages:1,truncated:false,confidence:Math.min(full.confidence??100,table.confidence??100,summary.confidence??100)};
  }finally{await worker.terminate();}
 }
 $('read').onclick=async()=>{if(!selected||busy)return;busy=true;$('read').disabled=true;$('sample').disabled=true;prog(3);status('Preparando reconocimiento...');try{
   const isPdf=selected.type==='application/pdf'||/\.pdf$/i.test(selected.name);
   const output=isPdf?await readPdf(selected):await readImage(selected);
   if(!output.text.trim())throw new Error('No se reconoció texto en el archivo. Podés probar otra imagen más nítida.');
-  current=interpretarComprobante(output.text,selected.name,{tableText:output.tableText||'',summaryText:output.summaryText||'',headerText:output.headerText||'',supplierText:output.supplierText||''});current.metodo=output.method;current.paginas=output.pages;if(output.truncated)current.advertencias.push('Se procesaron solo las primeras 6 páginas de este PDF.');
+  current=interpretarComprobante(output.text,selected.name,{tableText:output.tableText||'',summaryText:output.summaryText||'',headerText:output.headerText||'',supplierText:output.supplierText||''});current.metodo=output.method;if(output.tableFocusError)current.advertencias.push(output.tableFocusError);if(current.tipo==='Remito'){const codes=[...new Set(((output.text||'')+'\n'+(output.tableText||'')).match(/\b[A-Z0-9]{1,10}-[A-Z0-9]{1,10}[)\]]?/gi)||[])].filter(x=>/[A-Z]/i.test(x));if(codes.length>current.articulos.length)current.advertencias.push('Se detectaron '+codes.length+' códigos de artículo, pero solo se interpretaron '+current.articulos.length+' renglones. No marques el remito como revisado hasta completar los faltantes.');}current.paginas=output.pages;if(output.truncated)current.advertencias.push('Se procesaron solo las primeras 6 páginas de este PDF.');
   if(output.confidence!=null&&output.confidence<55)current.advertencias.push('Lectura OCR con baja confianza. Verificá cada dato contra la imagen.');
   render();
   if(current.articulos.length===0)status('Se reconoció texto, pero no se pudieron identificar artículos. Abrí «Ver texto extraído» y corregí los campos o agregá artículos.','warning');
@@ -193,7 +198,7 @@ function validate(){if(!current)return;const w=[...current.advertencias];
   $('alerts').innerHTML=w.length?`<div class="notice warning" style="margin-top:10px"><b>Advertencias para revisar:</b><ul>${[...new Set(w)].map(x=>`<li>${h(x)}</li>`).join('')}</ul></div>`:'<div class="notice ok" style="margin-top:10px">Sin advertencias adicionales detectadas. Verificá visualmente el documento.</div>';
 }
 $('form').addEventListener('input',e=>{if(!current)return;const t=e.target; if(t.dataset.field!==undefined)current[t.dataset.field]=t.value;if(t.dataset.money!==undefined)current[t.dataset.money]=t.value.trim()?numberValue(t.value):null;if(t.dataset.field==='moneda'){render();return;}const i=Number(t.dataset.index);if(t.dataset.item!==undefined && current.articulos[i]){current.articulos[i][t.dataset.item]=t.value;if(t.dataset.item==='identificacion')$('form').querySelector(`[data-rubro="${i}"]`)?.classList.toggle('hidden',t.value!=='Genérico provisional');}if(t.dataset.itemnum!==undefined && current.articulos[i])current.articulos[i][t.dataset.itemnum]=t.value.trim()?numberValue(t.value):null;if(t.id==='notes')current.observaciones=t.value;current.revisado_local=false;$('reviewBadge').textContent='POR REVISAR';$('reviewBadge').className='pill warn';validate();});
-$('form').addEventListener('click',e=>{if(!current)return;const b=e.target.closest('button');if(!b)return;const i=Number(b.dataset.remove??b.dataset.calc);if(b.id==='add'){current.articulos.push({codigo_proveedor:'',cantidad:null,unidad:'',descripcion:'',precio_unitario:null,descuento_porcentaje:null,iva_porcentaje:null,importe:null,sector:'',identificacion:'Pendiente',codigo_generico:''});render();return;}if(b.dataset.remove!==undefined){current.articulos.splice(i,1);render();return;}if(b.dataset.calc!==undefined){const a=current.articulos[i];if(a.cantidad!=null&&a.precio_unitario!=null){a.importe=Math.round(a.cantidad*a.precio_unitario*(1-(a.descuento_porcentaje||0)/100)*100)/100;render();}else status('Faltan cantidad o precio unitario para calcular el importe.','warning');return;}if(b.id==='approve'){if(!current.articulos.length){status('No se puede marcar como revisado un comprobante con cero artículos reconocidos. Agregá o corregí los renglones primero.','warning');return;}if(current.articulos.some(a=>a.cantidad==null||!Number.isFinite(Number(a.cantidad))||Number(a.cantidad)<=0)){status('Hay artículos con cantidad pendiente o inválida. Completá y verificá sus cantidades antes de marcar el comprobante como revisado.','warning');return;}current.revisado_local=true;render();status('Marcado como revisado en esta pantalla. No fue enviado al ERP.','ok');return;}if(b.id==='exportJSON'){download('json');return;}if(b.id==='exportCSV'){download('csv');return;}});
+$('form').addEventListener('click',e=>{if(!current)return;const b=e.target.closest('button');if(!b)return;const i=Number(b.dataset.remove??b.dataset.calc);if(b.id==='add'){current.articulos.push({codigo_proveedor:'',cantidad:null,unidad:'',descripcion:'',precio_unitario:null,descuento_porcentaje:null,iva_porcentaje:null,importe:null,sector:'',identificacion:'Pendiente',codigo_generico:''});render();return;}if(b.dataset.remove!==undefined){current.articulos.splice(i,1);render();return;}if(b.dataset.calc!==undefined){const a=current.articulos[i];if(a.cantidad!=null&&a.precio_unitario!=null){a.importe=Math.round(a.cantidad*a.precio_unitario*(1-(a.descuento_porcentaje||0)/100)*100)/100;render();}else status('Faltan cantidad o precio unitario para calcular el importe.','warning');return;}if(b.id==='approve'){if(!current.articulos.length){status('No se puede marcar como revisado un comprobante con cero artículos reconocidos. Agregá o corregí los renglones primero.','warning');return;}if(current.advertencias.some(x=>/Se detectaron \d+ códigos de artículo, pero solo se interpretaron/i.test(x))){status('El OCR detectó más códigos que artículos interpretados. Completá los renglones faltantes antes de marcar como revisado.','warning');return;}if(current.articulos.some(a=>a.cantidad==null||!Number.isFinite(Number(a.cantidad))||Number(a.cantidad)<=0)){status('Hay artículos con cantidad pendiente o inválida. Completá y verificá sus cantidades antes de marcar el comprobante como revisado.','warning');return;}current.revisado_local=true;render();status('Marcado como revisado en esta pantalla. No fue enviado al ERP.','ok');return;}if(b.id==='exportJSON'){download('json');return;}if(b.id==='exportCSV'){download('csv');return;}});
 function fileName(){return (current.numero||'sin_numero').replace(/[^a-zA-Z0-9-_]/g,'_');}
 function download(fmt){const obj=structuredClone(current);delete obj.texto_extraido;obj.fecha_exportacion=new Date().toISOString();obj.ambiente='DEMO';obj.no_registra_stock=true;obj.no_contabiliza=true;let blob,name;
   if(fmt==='json'){blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json;charset=utf-8'});name=`lectura_${fileName()}.json`;}else{const cols=['tipo','letra','numero','fecha','fecha_vto_cae','moneda','proveedor','cuit_proveedor','cuit_comprador','identificacion_proveedor','identificacion_comprador','subtotal_bruto','descuento_documento','neto','iva','iva_contenido','percepcion_iibb','percepcion_iva','otros_tributos','total','referencia_operacion','referencia_comprobante','orden_compra','cai','cae','descripcion','cantidad','unidad','precio_unitario','descuento_porcentaje','iva_porcentaje','importe','sector','identificacion','codigo_generico'];const csv=[cols.join(';'),...(obj.articulos.length?obj.articulos:[{}]).map(r=>cols.map(k=>'"'+String((r[k]??obj[k]??'')).replace(/"/g,'""')+'"').join(';'))].join('\r\n');blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});name=`lectura_${fileName()}.csv`;}
