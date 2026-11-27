@@ -101,7 +101,7 @@ async function photoColumnZone(file,xRatio,yRatio,wRatio,hRatio){
  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,x,y,w,h,0,0,canvas.width,canvas.height);bitmap.close?.();
  const image=ctx.getImageData(0,0,canvas.width,canvas.height),pixels=image.data;
- for(let i=0;i<pixels.length;i+=4){const g=Math.round(.299*pixels[i]+.587*pixels[i+1]+.114*pixels[i+2]);const v=Math.max(0,Math.min(255,Math.round((g-18)*1.12)));pixels[i]=pixels[i+1]=pixels[i+2]=v;pixels[i+3]=255;}
+ for(let i=0;i<pixels.length;i+=4){const g=Math.round(.299*pixels[i]+.587*pixels[i+1]+.114*pixels[i+2]);pixels[i]=pixels[i+1]=pixels[i+2]=g;pixels[i+3]=255;}
  ctx.putImageData(image,0,0);return canvas;
 }
 async function readRemitoColumns(file,worker){
