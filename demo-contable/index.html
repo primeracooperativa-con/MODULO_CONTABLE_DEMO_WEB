@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#15364D">
+<title>Módulo Contable · Primera Cooperativa · Demo V0.1</title>
+<style>
+:root{--navy:#15364D;--green:#008542;--bg:#F3F6F8;--ink:#233743;--muted:#687985;--line:#DDE5E9;--white:#fff;--soft:#EAF0F3;--amber:#A66500;--red:#B33A36;--blue:#3679B9;--shadow:0 8px 28px rgba(21,54,77,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "DM Sans","Manrope",system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:var(--green);font-weight:700;text-decoration:none}.app{min-height:100vh}.topbar{height:66px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 24px;gap:13px;position:sticky;top:0;z-index:20;box-shadow:0 3px 14px #15364d20}.logo{width:37px;height:37px;border-radius:10px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}.brand strong{display:block;font-size:14px;letter-spacing:.2px}.brand small{display:block;color:#cbd8df;font-size:11px}.top-spacer{flex:1}.demo-pill{border:1px solid #91b3a4;color:#d8f4e5;background:#0a6740;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.4px}.top-user{display:flex;align-items:center;gap:8px;color:#e3ebef;font-size:12px}.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#2b566e;color:white;font-weight:800}.layout{display:grid;grid-template-columns:238px minmax(0,1fr);max-width:1600px;margin:auto;min-height:calc(100vh - 66px)}.sidebar{padding:22px 14px;border-right:1px solid var(--line);background:#f8fafb}.nav-label{padding:0 12px 9px;color:#8a99a2;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase}.nav{display:grid;gap:4px}.nav button{border:0;background:transparent;color:#455965;text-align:left;padding:10px 12px;border-radius:9px;display:flex;align-items:center;gap:11px;font-weight:650;font-size:13px}.nav button:hover{background:#eaf0f3}.nav button.active{background:#e5f2eb;color:var(--green);font-weight:800}.nav-ico{width:21px;text-align:center;font-size:16px}.side-note{margin:24px 4px 0;padding:13px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--muted);font-size:11px}.side-note strong{display:block;color:var(--navy);font-size:12px;margin-bottom:4px}.content{padding:28px clamp(16px,3vw,38px) 48px;min-width:0}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--green);font-weight:900;margin-bottom:5px}.page-head h1{font-size:26px;line-height:1.15;letter-spacing:-.8px;margin:0;color:var(--navy)}.page-head p{margin:6px 0 0;color:var(--muted);max-width:700px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);border-radius:8px;background:white;color:var(--navy);padding:9px 13px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn:hover{border-color:#9bb2be;background:#f9fbfc}.btn.primary{background:var(--green);color:white;border-color:var(--green)}.btn.primary:hover{background:#006f37}.btn.dark{background:var(--navy);color:#fff;border-color:var(--navy)}.btn.ghost{background:transparent}.btn.danger{color:var(--red);border-color:#e9c7c5}.btn.small{padding:6px 9px;font-size:11px}.btn:disabled{opacity:.45;cursor:not-allowed}.notice{border:1px solid #d6e5dc;background:#f0f7f2;color:#365b47;padding:12px 14px;border-radius:10px;font-size:12px;margin-bottom:16px}.notice.warn{border-color:#ead8b6;background:#fff8e9;color:#76531b}.notice.info{border-color:#d4e2ec;background:#f1f7fb;color:#355c77}.notice strong{display:block;margin-bottom:2px}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.stat,.card{background:white;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}.stat{padding:16px}.stat .label{color:var(--muted);font-size:11px;font-weight:700}.stat .value{font-size:28px;color:var(--navy);font-weight:850;letter-spacing:-1px;margin:4px 0}.stat .foot{font-size:11px;color:var(--muted)}.card{padding:17px;margin-bottom:15px}.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.card-head h2{font-size:15px;margin:0;color:var(--navy)}.card-head p{font-size:11px;color:var(--muted);margin:3px 0 0}.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap;background:#edf1f3;color:#50616c}.tag.green{background:#e6f4eb;color:#08723c}.tag.amber{background:#fff3d9;color:#875b09}.tag.red{background:#fdecea;color:#a4312e}.tag.blue{background:#e8f1f8;color:#2e648e}.tag.gray{background:#eef1f3;color:#65737c}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:9px}table{width:100%;border-collapse:collapse;min-width:680px;background:white}th{text-align:left;background:#f7f9fa;color:#71808a;font-size:10px;text-transform:uppercase;letter-spacing:.55px;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:11px 12px;border-bottom:1px solid #edf1f3;font-size:12px;vertical-align:middle}tr:last-child td{border-bottom:0}tbody tr.clickable{cursor:pointer}tbody tr.clickable:hover{background:#f7faf8}.main-text{font-weight:800;color:var(--navy)}.sub-text{display:block;color:var(--muted);font-size:10px;margin-top:2px}.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.search{position:relative;flex:1;min-width:210px}.search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:8px;background:white;outline:none}.search:before{content:"⌕";position:absolute;left:12px;top:6px;color:#71808a;font-size:20px}.control,select,input,textarea{border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:white;color:var(--ink);outline:none}.control:focus,select:focus,input:focus,textarea:focus{border-color:#6eaa8a;box-shadow:0 0 0 3px #00854214}.toolbar select{min-width:150px}.two-col{display:grid;grid-template-columns:1.3fr .9fr;gap:15px}.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.list{display:grid;gap:10px}.list-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #edf1f3}.list-row:last-child{border:0}.list-icon{width:34px;height:34px;border-radius:9px;background:#e9f3ed;color:var(--green);display:grid;place-items:center;font-weight:900}.grow{flex:1;min-width:0}.muted{color:var(--muted)}.small{font-size:11px}.right{text-align:right}.metric{font-size:19px;font-weight:850;color:var(--navy)}.bar-row{display:grid;grid-template-columns:115px 1fr 52px;gap:10px;align-items:center;margin:12px 0;font-size:12px}.bar{height:10px;background:#edf1f3;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;border-radius:99px;background:var(--green)}.bar.blue span{background:var(--blue)}.bar.amber span{background:#c28a2d}.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-3px 0 15px;overflow:auto}.tabs button{border:0;background:transparent;padding:10px 12px;color:var(--muted);font-size:12px;font-weight:800;border-bottom:2px solid transparent;white-space:nowrap}.tabs button.active{color:var(--green);border-color:var(--green)}.detail-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}.detail-top h2{font-size:20px;color:var(--navy);margin:0}.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.kv div{padding:11px;background:#f7f9fa;border-radius:8px}.kv label{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}.kv strong{font-size:12px;color:var(--navy)}.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px}.empty strong{display:block;color:var(--navy);font-size:14px;margin-bottom:5px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:800;color:#526570}.field input,.field select,.field textarea{width:100%}.field textarea{min-height:75px;resize:vertical}.hint{font-size:10px;color:var(--muted)}.modal-back{position:fixed;inset:0;background:#102c3d88;display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}.modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:white;border-radius:14px;box-shadow:0 20px 70px #0b243744}.modal-head{display:flex;align-items:center;justify-content:space-between;padding:17px 20px;border-bottom:1px solid var(--line)}.modal-head h2{font-size:16px;color:var(--navy);margin:0}.modal-body{padding:18px 20px}.modal-foot{padding:13px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}.close{border:0;background:#f1f4f6;border-radius:7px;width:30px;height:30px;font-size:18px;color:var(--muted)}.footer-note{font-size:10px;color:var(--muted);margin-top:20px;text-align:center}.toast{position:fixed;bottom:20px;right:20px;z-index:80;background:var(--navy);color:white;padding:12px 16px;border-radius:9px;box-shadow:var(--shadow);font-size:12px;max-width:340px}.hidden{display:none!important}.split{display:flex;align-items:center;justify-content:space-between;gap:10px}.pill-row{display:flex;gap:7px;flex-wrap:wrap}.link-btn{border:0;background:transparent;color:var(--green);font-weight:800;font-size:11px;padding:4px}.demo-watermark{font-size:10px;color:#8b9aa3}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:9px 12px;position:sticky;top:66px;z-index:15;overflow:auto}.nav-label,.side-note{display:none}.nav{display:flex;min-width:max-content}.nav button{padding:9px 10px}.content{padding-top:20px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}}
+@media(max-width:600px){.topbar{padding:0 13px;height:60px}.top-user{display:none}.layout{min-height:calc(100vh - 60px)}.sidebar{top:60px}.content{padding:18px 12px 35px}.page-head{display:block}.page-head .actions{margin-top:13px}.page-head h1{font-size:23px}.stats{gap:9px}.stat{padding:12px}.stat .value{font-size:24px}.three-col{grid-template-columns:1fr}.kv{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:13px}.bar-row{grid-template-columns:90px 1fr 42px}.demo-pill{font-size:9px;padding:4px 7px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="logo">PC</div>
+  <div class="brand"><strong>PRIMERA COOPERATIVA</strong><small>Módulo Contable · espacio de demostración</small></div>
+  <div class="top-spacer"></div>
+  <span class="demo-pill">DEMO · DATOS FICTICIOS</span>
+  <div class="top-user"><span class="avatar">LC</span><span>Lucía Contable</span></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="nav-label">Gestión contable</div>
+  <nav class="nav" id="nav">
+    <button class="active" data-page="inicio"><span class="nav-ico">⌂</span>Inicio</button>
+    <button data-page="compras"><span class="nav-ico">▤</span>Compras</button>
+    <button data-page="comprobantes"><span class="nav-ico">▧</span>Comprobantes</button>
+    <button data-page="articulos"><span class="nav-ico">▦</span>Artículos</button>
+    <button data-page="proveedores"><span class="nav-ico">♧</span>Proveedores</button>
+    <button data-page="servicios"><span class="nav-ico">▱</span>Servicios y Gastos</button>
+    <button data-page="imputaciones"><span class="nav-ico">◎</span>Imputaciones</button>
+    <button data-page="costos"><span class="nav-ico">▥</span>Costos y consumos</button>
+    <button data-page="informes"><span class="nav-ico">▤</span>Informes</button>
+  </nav>
+  <div class="side-note"><strong>Entorno aislado</strong>Los cambios de esta demo se guardan solamente en este navegador. No se conectan con stock, Tango, M01 ni otros módulos.</div>
+</aside>
+<main class="content" id="content"></main>
+</div>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<script>
+(function(){
+"use strict";
+const KEY="pc_modulo_contable_demo_v01";
+const sectors=["Empaque","Frigorífico","Maestranza","Administración","Taller Externo","Materiales"];
+const seed={
+ suppliers:[
+  {id:"PR-001",name:"Agroinsumos La Chacra de Prueba S.R.L.",trade:"La Chacra",tax:"30-71666777-2",status:"Identificado",city:"Cipolletti",docs:8},
+  {id:"PR-002",name:"Ferretería El Tornillo Feliz S.A.",trade:"El Tornillo Feliz",tax:"30-70955128-1",status:"Identificado",city:"Cipolletti",docs:5},
+  {id:"PR-003",name:"Papelera del Valle Ficticia S.A.",trade:"Papelera del Valle",tax:"30-70000111-8",status:"Identificado",city:"General Roca",docs:4},
+  {id:"PR-004",name:"Servicios Patagónicos Demo S.R.L.",trade:"Servicios Patagónicos",tax:"30-70000222-6",status:"Identificado",city:"Neuquén",docs:3},
+  {id:"PR-005",name:"Proveedor Nuevo de Prueba S.R.L.",trade:"Proveedor Nuevo",tax:"30-70000333-4",status:"Provisional",city:"",docs:1}
+ ],
+ articles:[
+  {id:"AR-001",code:"HIPO-20",name:"Hipoclorito de sodio",unit:"litro",sectors:["Empaque","Frigorífico"],status:"Identificado",type:"Insumo",trace:"Según procedimiento sectorial",price:1250},
+  {id:"AR-002",code:"FILM-01",name:"Film stretch",unit:"rollo",sectors:["Empaque"],status:"Identificado",type:"Material de empaque",trace:"No",price:18400},
+  {id:"AR-003",code:"LUB-04",name:"Lubricante industrial",unit:"litro",sectors:["Taller Externo","Frigorífico"],status:"Identificado",type:"Mantenimiento",trace:"No",price:9800},
+  {id:"AR-004",code:"BOL-50",name:"Bolsa industrial 50 kg",unit:"unidad",sectors:["Empaque","Materiales"],status:"Pendiente de homologación",type:"Embalaje",trace:"No",price:460},
+  {id:"AR-005",code:"GEN-0001",name:"Producto sin identificar",unit:"unidad",sectors:["Por determinar"],status:"Genérico provisional",type:"Genérico",trace:"Pendiente",price:null}
+ ],
+ services:[
+  {id:"SG-001",name:"Servicio de mantenimiento preventivo",provider:"Servicios Patagónicos Demo S.R.L.",sector:"Taller Externo",amount:420000,date:"2026-11-12",status:"Imputado"},
+  {id:"SG-002",name:"Flete de mercadería",provider:"Transportes Ficticios S.A.",sector:"Empaque / Frigorífico",amount:85000,date:"2026-11-18",status:"Pendiente de imputación"},
+  {id:"SG-003",name:"Reparación de equipo de frío",provider:"Servicios Patagónicos Demo S.R.L.",sector:"Frigorífico",amount:275000,date:"2026-11-20",status:"Revisado"}
+ ],
+ docs:[
+  {id:"DC-001",type:"Factura A",number:"0003-00009402",date:"2026-11-14",supplier:"Agroinsumos La Chacra de Prueba S.R.L.",total:3093968.44,currency:"ARS",status:"Validado",sector:"Empaque",operation:"OP-0042",items:4},
+  {id:"DC-002",type:"Remito R",number:"0003-00011902",date:"2026-11-14",supplier:"Agroinsumos La Chacra de Prueba S.R.L.",total:null,currency:"ARS",status:"Vinculado",sector:"Empaque",operation:"OP-0042",items:4},
+  {id:"DC-003",type:"Remito R",number:"0002-00008870",date:"2026-11-24",supplier:"Ferretería El Tornillo Feliz S.A.",total:null,currency:"ARS",status:"Por revisar",sector:"Frigorífico",operation:"OP-0043",items:3},
+  {id:"DC-004",type:"Factura A",number:"0001-00001251",date:"2026-11-20",supplier:"Papelera del Valle Ficticia S.A.",total:555144.94,currency:"ARS",status:"Validado",sector:"Administración",operation:"OP-0041",items:6},
+  {id:"DC-005",type:"Ticket",number:"T-00187734",date:"2026-11-21",supplier:"Proveedor Nuevo de Prueba S.R.L.",total:52750,currency:"ARS",status:"Por revisar",sector:"Administración",operation:"OP-0044",items:6}
+ ],
+ purchases:[
+  {id:"OP-0041",supplier:"Papelera del Valle Ficticia S.A.",date:"2026-11-20",sectors:["Administración"],docs:["DC-004"],status:"Conciliada documentalmente",receipt:"Completa",imputation:"Confirmada",description:"Compra de artículos de librería y papelería",items:[{name:"Papel A4",ordered:10,received:10,unit:"resma"},{name:"Tóner",ordered:2,received:2,unit:"unidad"}],history:["20/11 · Comprobante recibido y validado","21/11 · Recepción completa informada por el sector","22/11 · Imputación confirmada"]},
+  {id:"OP-0042",supplier:"Agroinsumos La Chacra de Prueba S.R.L.",date:"2026-11-14",sectors:["Empaque","Frigorífico"],docs:["DC-001","DC-002"],status:"Parcialmente conciliada",receipt:"Parcial",imputation:"Pendiente",description:"Insumos para operación de Empaque y Frigorífico",items:[{name:"Fertilizante de prueba",ordered:40,received:25,unit:"bolsa"},{name:"Fungicida de prueba",ordered:8,received:8,unit:"bolsa"},{name:"Pulverizador",ordered:3,received:3,unit:"unidad"}],history:["14/11 · Remito registrado","14/11 · Factura vinculada por Contabilidad","16/11 · Recepción parcial informada por Empaque","Pendiente · Conciliar 15 bolsas y completar imputación"]},
+  {id:"OP-0043",supplier:"Ferretería El Tornillo Feliz S.A.",date:"2026-11-24",sectors:["Frigorífico"],docs:["DC-003"],status:"Esperando recepción",receipt:"Pendiente",imputation:"Pendiente",description:"Herramientas e insumos de mantenimiento",items:[{name:"Escalera tijera aluminio 6 escalones",ordered:1,received:0,unit:"unidad"},{name:"Lámpara LED 12W",ordered:20,received:0,unit:"unidad"},{name:"Extensión eléctrica 5 m",ordered:4,received:0,unit:"unidad"},{name:"Sellador silicona 280 ml",ordered:6,received:0,unit:"unidad"}],history:["24/11 · Remito cargado; recepción física pendiente según procedimiento del sector"]},
+  {id:"OP-0044",supplier:"Proveedor Nuevo de Prueba S.R.L.",date:"2026-11-21",sectors:["Administración"],docs:["DC-005"],status:"Por revisar",receipt:"No corresponde",imputation:"Pendiente",description:"Compra menor registrada desde ticket",items:[{name:"Artículos varios de consumo",ordered:1,received:1,unit:"lote"}],history:["21/11 · Ticket registrado; revisar proveedor y detalle de artículos"]}
+ ],
+ imputations:[
+  {id:"IM-001",operation:"OP-0041",concept:"Compra de papelería",mode:"Importes",total:555144.94,rows:[{sector:"Administración",amount:555144.94,percent:100}],status:"Confirmada"},
+  {id:"IM-002",operation:"OP-0042",concept:"Distribución ilustrativa de insumos",mode:"Porcentajes",total:1000000,rows:[{sector:"Empaque",amount:620000,percent:62},{sector:"Frigorífico",amount:380000,percent:38}],status:"Pendiente de revisión"}
+ ],
+ receptionRules:sectors.map(s=>({sector:s,rule:"Pendiente de definir con el responsable del sector"}))
+};
+let data=load();
+let page="inicio",detailId=null,detailTab="Resumen";
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||"null");return x&&x.version===1?x.data:clone(seed)}catch(e){return clone(seed)}}
+function save(){localStorage.setItem(KEY,JSON.stringify({version:1,data:data}))}
+function money(n){if(n===null||n===undefined||n==="")return "—";return new Intl.NumberFormat("es-AR",{style:"currency",currency:"ARS",maximumFractionDigits:2}).format(Number(n))}
+function date(s){if(!s)return "—";const a=s.split("-");return a.length===3?a[2]+"/"+a[1]+"/"+a[0]:s}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function tag(s){let cls="gray";if(/Validado|Identificado|Confirmad|Completa|Conciliada|Vinculado|Imputado|Revisado/i.test(s))cls="green";else if(/Pendiente|Provisional|Parcial|Observad|revisar|Esperando/i.test(s))cls="amber";else if(/Rechaz|Diferencia/i.test(s))cls="red";else if(/Por revisar|Propuesta/i.test(s))cls="blue";return '<span class="tag '+cls+'">'+esc(s)+'</span>'}
+function header(title,desc,actions){return '<div class="page-head"><div><div class="eyebrow">Módulo Contable / '+(page==="inicio"?"Panel":esc(title))+'</div><h1>'+title+'</h1><p>'+desc+'</p></div><div class="actions">'+(actions||"")+'</div></div>'}
+function btn(label,action,cls){return '<button class="btn '+(cls||"")+'" data-action="'+action+'">'+label+'</button>'}
+function stat(label,value,foot){return '<div class="stat"><div class="label">'+label+'</div><div class="value">'+value+'</div><div class="foot">'+foot+'</div></div>'}
+function table(headers,rows){return '<div class="table-wrap"><table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>'}
+function empty(title,desc){return '<div class="empty"><strong>'+title+'</strong>'+desc+'</div>'}
+function pageShell(title,desc,actions,body){document.getElementById("content").innerHTML=header(title,desc,actions)+body;document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page))}
+function go(p){page=p;detailId=null;render()}
+function render(){switch(page){case"inicio":renderHome();break;case"compras":renderPurchases();break;case"comprobantes":renderDocs();break;case"articulos":renderArticles();break;case"proveedores":renderSuppliers();break;case"servicios":renderServices();break;case"imputaciones":renderImputations();break;case"costos":renderCosts();break;case"informes":renderReports();break;default:renderHome()}}
+function renderHome(){
+ const pending=data.docs.filter(x=>x.status==="Por revisar").length;
+ const noInvoice=data.purchases.filter(x=>x.status!=="Conciliada documentalmente"&&!x.docs.some(id=>data.docs.find(d=>d.id===id&&d.type.indexOf("Factura")===0))).length;
+ const receipt=data.purchases.filter(x=>x.receipt==="Pendiente"||x.receipt==="Parcial").length;
+ const imput=data.purchases.filter(x=>x.imputation==="Pendiente").length;
+ const recent=data.purchases.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).map(x=>'<tr class="clickable" data-open="'+x.id+'"><td><span class="main-text">'+x.id+'</span><span class="sub-text">'+esc(x.supplier)+'</span></td><td>'+x.sectors.map(esc).join(" / ")+'</td><td>'+tag(x.receipt)+'</td><td>'+tag(x.imputation)+'</td><td>'+tag(x.status)+'</td></tr>').join("");
+ const body='<div class="notice info"><strong>Entorno de demostración</strong>Los datos, proveedores, comprobantes y operaciones son ficticios. Esta demo no registra asientos, pagos ni movimientos reales de stock.</div><div class="grid stats">'+stat("Comprobantes por revisar",pending,"Revisión documental") +stat("Compras sin factura",noInvoice,"Documentación pendiente")+stat("Recepciones pendientes/parciales",receipt,"Confirmación desde sectores")+stat("Imputaciones pendientes",imput,"Distribución por revisar")+'</div><div class="two-col"><section class="card"><div class="card-head"><div><h2>Operaciones recientes</h2><p>Seleccioná una operación para ver su detalle</p></div><button class="link-btn" data-page="compras">Ver todas →</button></div>'+table(["Operación / proveedor","Sector","Recepción","Imputación","Estado"],recent)+'</section><section class="card"><div class="card-head"><div><h2>Atención requerida</h2><p>Pendientes ilustrativos del circuito</p></div></div><div class="list"><div class="list-row"><div class="list-icon">!</div><div class="grow"><div class="main-text">Remito sin recepción confirmada</div><span class="sub-text">OP-0043 · Frigorífico</span></div>'+tag("Pendiente")+'</div><div class="list-row"><div class="list-icon">↗</div><div class="grow"><div class="main-text">Distribución por revisar</div><span class="sub-text">OP-0042 · Empaque / Frigorífico</span></div>'+tag("Pendiente")+'</div><div class="list-row"><div class="list-icon">▧</div><div class="grow"><div class="main-text">Proveedor provisional</div><span class="sub-text">Completar datos en maestro (simulado)</span></div>'+tag("Provisional")+'</div></div><div style="margin-top:14px">'+btn("Ir a Compras","go-compras","primary")+' '+btn("Ver comprobantes","go-docs","")+'</div></section></div><div class="card"><div class="card-head"><div><h2>Accesos rápidos</h2><p>Acciones de trabajo frecuentes</p></div></div><div class="actions">'+btn("＋ Registrar comprobante","new-doc","primary")+btn("＋ Nueva operación","new-purchase")+btn("＋ Alta de artículo","new-article")+btn("＋ Servicio o gasto","new-service")+'</div></div>';
+ pageShell("Inicio","Resumen de actividad, documentación pendiente e imputaciones. Datos ficticios para validar el circuito.", "",body);
+}
+function renderPurchases(){
+ if(detailId){renderPurchaseDetail();return}
+ const rows=data.purchases.map(x=>'<tr class="clickable" data-open="'+x.id+'"><td><span class="main-text">'+x.id+'</span><span class="sub-text">'+esc(x.description)+'</span></td><td>'+esc(x.supplier)+'</td><td>'+date(x.date)+'</td><td>'+x.sectors.map(esc).join(" / ")+'</td><td>'+tag(x.receipt)+'</td><td>'+tag(x.imputation)+'</td><td>'+tag(x.status)+'</td></tr>').join("");
+ const body='<div class="notice"><strong>Seguimiento documental, no gestión de pagos</strong>Una operación puede reunir varios comprobantes y recepciones parciales. Contabilidad consulta y concilia; el movimiento físico corresponde al módulo sectorial/servicio común.</div><div class="toolbar"><div class="search"><input id="purchase-search" placeholder="Buscar operación, proveedor o sector..."></div><select id="purchase-filter"><option value="">Todos los estados</option><option>Esperando recepción</option><option>Parcialmente conciliada</option><option>Conciliada documentalmente</option><option>Por revisar</option></select></div><div class="card">'+table(["Operación","Proveedor","Fecha","Sector/es","Recepción","Imputación","Estado documental"],rows)+'</div><div class="card"><div class="card-head"><div><h2>Modalidad de recepción por sector</h2><p>La forma de registrar la recepción se define con cada responsable; no se impone un método único.</p></div></div>'+table(["Sector","Configuración"],data.receptionRules.map(x=>'<tr><td>'+esc(x.sector)+'</td><td>'+tag("Pendiente de definir")+' <span class="sub-text">'+esc(x.rule)+'</span></td></tr>').join(""))+'</div>';
+ pageShell("Compras","Seguimiento de operaciones documentales, comprobantes relacionados y recepciones informadas por los sectores.",btn("＋ Nueva operación","new-purchase","primary"),body);
+ const q=document.getElementById("purchase-search"),f=document.getElementById("purchase-filter");
+ function filter(){const term=q.value.toLowerCase(),state=f.value;document.querySelectorAll("#content tbody tr.clickable").forEach(tr=>{const x=data.purchases.find(z=>z.id===tr.dataset.open);tr.style.display=(!term||(x.id+" "+x.supplier+" "+x.sectors.join(" ")).toLowerCase().includes(term))&&(!state||x.status===state)?"":"none"})}
+ q.addEventListener("input",filter);f.addEventListener("change",filter);
+}
+function renderPurchaseDetail(){
+ const x=data.purchases.find(z=>z.id===detailId);if(!x){detailId=null;renderPurchases();return}
+ const docs=x.docs.map(id=>data.docs.find(d=>d.id===id)).filter(Boolean);
+ const tabs=["Resumen","Documentación","Artículos","Recepciones","Imputaciones","Historial"];
+ let body='';
+ if(detailTab==="Resumen")body='<div class="kv"><div><label>Proveedor</label><strong>'+esc(x.supplier)+'</strong></div><div><label>Fecha de operación</label><strong>'+date(x.date)+'</strong></div><div><label>Sector/es</label><strong>'+x.sectors.map(esc).join(" / ")+'</strong></div><div><label>Documentación</label><strong>'+docs.length+' documento(s)</strong></div><div><label>Recepción física</label><strong>'+esc(x.receipt)+'</strong></div><div><label>Imputación</label><strong>'+esc(x.imputation)+'</strong></div></div><div class="notice info" style="margin-top:15px"><strong>Responsabilidad sectorial</strong>La modalidad de recepción física de '+x.sectors.join(", ")+' debe definirse con sus responsables. Esta demo no determina quién recibe ni valida por ellos.</div>';
+ if(detailTab==="Documentación")body=table(["Tipo","Número","Fecha","Importe","Estado"],docs.map(d=>'<tr><td>'+esc(d.type)+'</td><td>'+esc(d.number)+'</td><td>'+date(d.date)+'</td><td>'+money(d.total)+'</td><td>'+tag(d.status)+'</td></tr>').join(""))+'<div style="margin-top:12px">'+btn("＋ Registrar otro comprobante","new-doc","primary")+' '+btn("Buscar sugerencias de vínculo","suggest-link")+'</div>';
+ if(detailTab==="Artículos")body=table(["Artículo","Cantidad documentada","Recibido","Unidad","Diferencia"],x.items.map(a=>'<tr><td class="main-text">'+esc(a.name)+'</td><td>'+a.ordered+'</td><td>'+a.received+'</td><td>'+esc(a.unit)+'</td><td>'+Math.max(0,a.ordered-a.received)+'</td></tr>').join(""));
+ if(detailTab==="Recepciones")body='<div class="notice warn"><strong>Recepción física según cada sector</strong>La modalidad y las personas habilitadas están pendientes de definición con el responsable sectorial. Las cantidades mostradas son datos ficticios de ejemplo.</div>'+table(["Artículo","Documentado","Recepción informada","Pendiente"],x.items.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+a.ordered+' '+esc(a.unit)+'</td><td>'+a.received+' '+esc(a.unit)+'</td><td>'+Math.max(0,a.ordered-a.received)+' '+esc(a.unit)+'</td></tr>').join(""));
+ if(detailTab==="Imputaciones"){const im=data.imputations.filter(z=>z.operation===x.id);body=im.length?im.map(m=>'<div class="card"><div class="split"><strong>'+esc(m.concept)+'</strong>'+tag(m.status)+'</div><p class="muted small">Modalidad: '+esc(m.mode)+' · Base: '+money(m.total)+'</p>'+table(["Sector","Importe","Participación"],m.rows.map(r=>'<tr><td>'+esc(r.sector)+'</td><td>'+money(r.amount)+'</td><td>'+r.percent+'%</td></tr>').join(""))+'</div>').join(""):empty("Sin imputaciones registradas","La distribución de esta operación todavía no fue cargada.")+'<button class="btn primary" data-action="new-imputation" data-operation="'+x.id+'">＋ Nueva imputación</button>'}
+ if(detailTab==="Historial")body='<div class="list">'+x.history.map(h=>'<div class="list-row"><div class="list-icon">•</div><div class="grow">'+esc(h)+'</div></div>').join("")+'</div>';
+ document.getElementById("content").innerHTML=header("Detalle de compra","Operación "+x.id+" · "+esc(x.supplier),btn("← Volver a compras","back-purchases",""))+'<div class="card"><div class="detail-top"><div><h2>'+x.id+' · '+esc(x.description)+'</h2><p class="muted small">'+x.sectors.map(esc).join(" / ")+'</p></div>'+tag(x.status)+'</div><div class="tabs">'+tabs.map(t=>'<button data-detail-tab="'+t+'" class="'+(detailTab===t?"active":"")+'">'+t+'</button>').join("")+'</div>'+body+'</div>';
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="compras"));
+}
+function renderDocs(){
+ const rows=data.docs.map(d=>'<tr><td><span class="main-text">'+esc(d.type)+'</span><span class="sub-text">'+esc(d.number)+'</span></td><td>'+esc(d.supplier)+'</td><td>'+date(d.date)+'</td><td>'+(d.total===null?"—":money(d.total))+'</td><td>'+esc(d.sector)+'</td><td>'+tag(d.status)+'</td><td><button class="link-btn" data-action="doc-suggest" data-doc="'+d.id+'">Vínculos</button></td></tr>').join("");
+ const body='<div class="notice info"><strong>Lector automático separado</strong>La demo representa el circuito contable. El lector V16.1 sigue siendo una herramienta experimental independiente; abrirlo no envía documentos a esta demo ni integra automáticamente los resultados.</div><div class="toolbar"><div class="search"><input id="doc-search" placeholder="Buscar proveedor, número o tipo..."></div><select id="doc-status"><option value="">Todos los estados</option><option>Por revisar</option><option>Validado</option><option>Vinculado</option></select></div><div class="card">'+table(["Comprobante","Proveedor","Fecha","Total","Sector","Estado","Relaciones"],rows)+'</div>';
+ pageShell("Comprobantes","Registro, revisión y vinculación de facturas, remitos, tickets y otros documentos.",btn("＋ Registrar comprobante","new-doc","primary"),body);
+ const q=document.getElementById("doc-search"),f=document.getElementById("doc-status");
+ function filter(){document.querySelectorAll("#content tbody tr").forEach((tr,i)=>{const d=data.docs[i];tr.style.display=(!q.value||(d.supplier+" "+d.number+" "+d.type).toLowerCase().includes(q.value.toLowerCase()))&&(!f.value||d.status===f.value)?"":"none"})}
+ q.addEventListener("input",filter);f.addEventListener("change",filter);
+}
+function renderArticles(){
+ const rows=data.articles.map(a=>'<tr><td><span class="main-text">'+esc(a.code)+'</span></td><td>'+esc(a.name)+'</td><td>'+esc(a.unit)+'</td><td>'+a.sectors.map(esc).join(" / ")+'</td><td>'+tag(a.status)+'</td><td>'+(a.price?money(a.price):"—")+'</td></tr>').join("");
+ const body='<div class="notice info"><strong>Vista contable del maestro</strong>Las altas definitivas deben registrarse en el Maestro Central autorizado. Esta demo usa datos locales ficticios y no modifica el catálogo de Insumos ni el stock.</div><div class="toolbar"><div class="search"><input id="article-search" placeholder="Buscar por código, descripción o sector..."></div><select id="article-state"><option value="">Todos los estados</option><option>Identificado</option><option>Genérico provisional</option><option>Pendiente de homologación</option></select></div><div class="card">'+table(["Código","Descripción","Unidad base","Sectores usuarios","Estado","Último precio de referencia"],rows)+'</div>';
+ pageShell("Artículos","Identificación de productos, códigos de proveedor, unidades, sectores usuarios e historial de precios.",btn("＋ Proponer artículo","new-article","primary"),body);
+ const q=document.getElementById("article-search"),f=document.getElementById("article-state");
+ function filter(){document.querySelectorAll("#content tbody tr").forEach((tr,i)=>{const a=data.articles[i];tr.style.display=(!q.value||(a.code+" "+a.name+" "+a.sectors.join(" ")).toLowerCase().includes(q.value.toLowerCase()))&&(!f.value||a.status===f.value)?"":"none"})}
+ q.addEventListener("input",filter);f.addEventListener("change",filter);
+}
+function renderSuppliers(){
+ const rows=data.suppliers.map(s=>'<tr><td><span class="main-text">'+esc(s.name)+'</span><span class="sub-text">'+esc(s.trade||"")+'</span></td><td>'+esc(s.tax||"Pendiente")+'</td><td>'+esc(s.city||"—")+'</td><td>'+s.docs+'</td><td>'+tag(s.status)+'</td><td><button class="link-btn" data-action="supplier-detail" data-id="'+s.id+'">Ver ficha</button></td></tr>').join("");
+ const body='<div class="notice"><strong>Autonomía de Contabilidad</strong>En el diseño funcional, los usuarios habilitados de Contabilidad podrán crear proveedores provisionales y completar el alta ordinaria en el Maestro Central mediante permisos delegados, sin intervención del administrador general. En esta demo la acción es simulada y local.</div><div class="toolbar"><div class="search"><input id="supplier-search" placeholder="Buscar razón social, CUIT o nombre comercial..."></div></div><div class="card">'+table(["Razón social / nombre comercial","CUIT","Localidad","Documentos","Estado","Ficha"],rows)+'</div>';
+ pageShell("Proveedores","Consulta, identificación y alta provisional de proveedores.",btn("＋ Alta provisional","new-supplier","primary"),body);
+ const q=document.getElementById("supplier-search");q.addEventListener("input",()=>document.querySelectorAll("#content tbody tr").forEach((tr,i)=>{const s=data.suppliers[i];tr.style.display=(s.name+" "+s.tax+" "+s.trade).toLowerCase().includes(q.value.toLowerCase())?"":"none"}));
+}
+function renderServices(){
+ const rows=data.services.map(s=>'<tr><td><span class="main-text">'+esc(s.name)+'</span><span class="sub-text">'+s.id+'</span></td><td>'+esc(s.provider)+'</td><td>'+date(s.date)+'</td><td>'+esc(s.sector)+'</td><td>'+money(s.amount)+'</td><td>'+tag(s.status)+'</td></tr>').join("");
+ const body='<div class="notice info"><strong>Sección independiente de Artículos</strong>Servicios y gastos no generan existencias ni movimientos de stock. Comparten proveedor, comprobantes e imputaciones.</div><div class="card">'+table(["Concepto","Proveedor","Fecha","Sector","Importe","Estado"],rows)+'</div>';
+ pageShell("Servicios y Gastos","Registro documental de fletes, reparaciones, mantenimiento, servicios y otros gastos.",btn("＋ Registrar servicio/gasto","new-service","primary"),body);
+}
+function renderImputations(){
+ const rows=data.imputations.map(m=>'<tr><td><span class="main-text">'+m.id+'</span><span class="sub-text">'+esc(m.operation)+' · '+esc(m.concept)+'</span></td><td>'+esc(m.mode)+'</td><td>'+money(m.total)+'</td><td>'+m.rows.map(r=>esc(r.sector)+" "+r.percent+"%").join("<br>")+'</td><td>'+tag(m.status)+'</td><td><button class="link-btn" data-action="edit-imputation" data-id="'+m.id+'">Ver / editar</button></td></tr>').join("");
+ const body='<div class="notice info"><strong>Tres modalidades disponibles</strong>Porcentajes, importes o cantidades, elegidas según cada operación. La imputación no genera un asiento ni un movimiento físico de stock.</div><div class="card">'+table(["Imputación","Modalidad","Base","Distribución","Estado","Acción"],rows)+'</div>';
+ pageShell("Imputaciones","Distribución de importes y cantidades por sector, cuenta y centro de costo.",btn("＋ Nueva imputación","new-imputation","primary"),body);
+}
+function renderCosts(){
+ const body='<div class="notice info"><strong>Datos de demostración</strong>Compras y consumos se muestran por separado. Los consumos reales deberán provenir de movimientos confirmados por los módulos sectoriales y el servicio común de stock.</div><div class="grid stats">'+stat("Compras documentadas",money(4200000),"Ejemplo de período")+stat("Consumos imputados",money(2760000),"Ejemplo de período")+stat("Artículos compartidos","3","Entre dos o más sectores")+stat("Variación de precios","+8,4%","Ejemplo contra período anterior")+'</div><div class="two-col"><section class="card"><div class="card-head"><div><h2>Distribución de consumo</h2><p>Participación por sector · datos ficticios</p></div></div><div class="bar-row"><span>Empaque</span><div class="bar"><span style="width:62%"></span></div><strong>62%</strong></div><div class="bar-row"><span>Frigorífico</span><div class="bar blue"><span style="width:28%"></span></div><strong>28%</strong></div><div class="bar-row"><span>Maestranza</span><div class="bar amber"><span style="width:10%"></span></div><strong>10%</strong></div></section><section class="card"><div class="card-head"><div><h2>Precio de compra</h2><p>Historial ilustrativo de un artículo</p></div></div><div class="bar-row"><span>Septiembre</span><div class="bar blue"><span style="width:64%"></span></div><strong>$1.080</strong></div><div class="bar-row"><span>Octubre</span><div class="bar blue"><span style="width:73%"></span></div><strong>$1.220</strong></div><div class="bar-row"><span>Noviembre</span><div class="bar"><span style="width:82%"></span></div><strong>$1.350</strong></div></section></div><div class="card"><div class="card-head"><div><h2>Lectura correcta de costos</h2><p>Separación de conceptos para evitar conclusiones erróneas</p></div></div>'+table(["Dato","Qué representa","Fuente futura"],[['Compra','Cantidad e importe documentados','Comprobantes / Contabilidad'],['Recepción','Cantidad efectivamente recibida','Módulo sectorial'],['Stock','Existencia registrada','Servicio común de stock'],['Consumo','Cantidad efectivamente utilizada','Módulo sectorial'],['Costo imputado','Destino contable del importe','Contabilidad / imputaciones']])+'</div>';
+ pageShell("Costos y consumos","Análisis conjunto de costos de compra, evolución de precios y consumos por sector.", "",body);
+}
+function renderReports(){
+ const body='<div class="notice info"><strong>Informes ilustrativos</strong>En esta demo se utilizan datos ficticios. Los informes definitivos dependerán de los maestros, imputaciones y consumos confirmados.</div><div class="grid three-col"><div class="card"><div class="main-text">Compras por proveedor</div><p class="muted small">Importes documentados por período y proveedor.</p><button class="btn small" data-action="export-docs">Exportar CSV</button></div><div class="card"><div class="main-text">Imputaciones por sector</div><p class="muted small">Distribución de importes y porcentajes.</p><button class="btn small" data-action="export-imputations">Exportar CSV</button></div><div class="card"><div class="main-text">Artículos y precios</div><p class="muted small">Códigos, unidades y referencias de compra.</p><button class="btn small" data-action="export-articles">Exportar CSV</button></div></div><div class="card"><div class="card-head"><div><h2>Controles antes de emitir informes</h2><p>Los datos pendientes no deben mezclarse con información confirmada.</p></div></div><ul><li>Separar comprobantes revisados de comprobantes pendientes.</li><li>Mostrar documentos vinculados y sugerencias sin confirmar por separado.</li><li>Distinguir compras, recepciones y consumos.</li><li>Identificar imputaciones incompletas y artículos genéricos.</li><li>Conservar filtros, período y fecha de generación.</li></ul></div>';
+ pageShell("Informes","Consultas y exportaciones de información documental, imputaciones y costos.", "",body);
+}
+function modal(title,body,submitLabel,submitAction){
+ const root=document.getElementById("modal-root");
+ root.innerHTML='<div class="modal-back" id="modal-back"><div class="modal"><div class="modal-head"><h2>'+title+'</h2><button class="close" data-action="close-modal">×</button></div><form id="modal-form" data-submit="'+submitAction+'"><div class="modal-body">'+body+'</div><div class="modal-foot"><button type="button" class="btn" data-action="close-modal">Cancelar</button><button type="submit" class="btn primary">'+submitLabel+'</button></div></form></div></div>';
+}
+function field(label,name,placeholder,value,type){return '<div class="field"><label>'+label+'</label><input name="'+name+'" type="'+(type||"text")+'" placeholder="'+(placeholder||"")+'" value="'+(value||"")+'"></div>'}
+function selectField(label,name,opts){return '<div class="field"><label>'+label+'</label><select name="'+name+'">'+opts.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("")+'</select></div>'}
+function newDoc(){
+ modal("Registrar comprobante",'<div class="notice info">Carga manual de demostración. El lector automático actual es independiente; esta pantalla no procesa archivos ni guarda documentos adjuntos.</div><div class="form-grid">'+selectField("Tipo de comprobante","type",["Factura A","Factura B","Factura C","Remito R","Ticket","Nota de crédito","Otro"])+field("Número","number","0001-00000000")+field("Proveedor","supplier","Razón social del emisor")+field("Fecha","date", "", "2026-11-27","date")+field("Importe total (si figura)","total","0,00")+selectField("Moneda","currency",["ARS","USD"])+selectField("Sector inicial / referencia","sector",sectors)+selectField("Estado documental","status",["Por revisar","Recibido","Validado"])+'</div><p class="hint">Si el documento no tiene precios (por ejemplo, un remito), dejá el importe vacío. La recepción física no se confirma desde esta pantalla.</p>',"Guardar comprobante","save-doc");
+}
+function newPurchase(){
+ modal("Nueva operación documental",'<div class="notice info">Crea una referencia documental de demostración. No crea orden de compra ni movimiento de stock.</div><div class="form-grid">'+field("Proveedor","supplier","Proveedor")+field("Fecha","date","","2026-11-27","date")+field("Descripción","description","Motivo o referencia")+selectField("Sector principal","sector",sectors)+'</div>',"Crear operación","save-purchase");
+}
+function newArticle(){
+ modal("Proponer alta de artículo",'<div class="notice info">Alta local de demostración. En el sistema real se enviará al Maestro Central según permisos y reglas aprobadas.</div><div class="form-grid">'+field("Código interno / provisional","code","Ej. ART-0001")+field("Descripción","name","Nombre del artículo")+selectField("Unidad base","unit",["unidad","litro","kg","bolsa","rollo","caja","metro","par"])+selectField("Sector usuario principal","sector",sectors)+selectField("Estado","status",["Genérico provisional","Pendiente de homologación"])+'</div>',"Guardar propuesta","save-article");
+}
+function newSupplier(){
+ modal("Alta provisional de proveedor",'<div class="notice info"><strong>Autonomía de Contabilidad (simulada)</strong>En el diseño aprobado, usuarios habilitados de Contabilidad podrán completar el alta ordinaria en el Maestro Central sin intervención del administrador general. Esta demo no modifica el maestro real.</div><div class="form-grid">'+field("Razón social","name","Razón social completa")+field("Nombre comercial","trade","Nombre comercial")+field("CUIT / identificador","tax","00-00000000-0")+field("Localidad","city","Localidad")+field("Condición fiscal","taxcondition","Según constancia")+field("Correo de contacto","email","correo@ejemplo.com","")+'</div>',"Crear proveedor provisional","save-supplier");
+}
+function newService(){
+ modal("Registrar servicio o gasto",'<div class="notice info">Los servicios y gastos no generan stock. El registro se vincula con su comprobante y su imputación.</div><div class="form-grid">'+field("Concepto","name","Ej. Flete de mercadería")+field("Proveedor","provider","Razón social")+field("Fecha","date","","2026-11-27","date")+field("Importe","amount","0,00")+selectField("Sector / destino inicial","sector",sectors)+selectField("Estado","status",["Pendiente de imputación","Revisado"])+'</div>',"Guardar registro","save-service");
+}
+function newImputation(operation){
+ const op=operation||"OP-0042";
+ const body='<div class="notice info">Elegí el criterio para esta operación. Los datos se guardan localmente en la demo.</div><div class="form-grid">'+selectField("Operación","operation",data.purchases.map(x=>x.id+" · "+x.supplier))+selectField("Modalidad","mode",["Por porcentajes","Por importes","Por cantidades"])+field("Importe base (ARS)","total","1000000","1000000","number")+field("Cantidad base (si corresponde)","quantity","100","100","number")+'</div><div class="hint">Distribución de ejemplo: Empaque, Frigorífico y Administración. Completá los valores según la modalidad seleccionada.</div><div class="form-grid" style="margin-top:12px">'+field("Empaque","v1","62","62","number")+field("Frigorífico","v2","38","38","number")+field("Administración","v3","0","0","number")+'</div><p class="hint">Porcentajes: total 100. Importes: suma igual al importe base. Cantidades: suma igual a la cantidad base. Las cuentas y centros de costo oficiales todavía no están configurados en esta demo.</p>';
+ modal("Nueva imputación",body,"Validar y guardar","save-imputation");
+ const sel=document.querySelector('[name="operation"]');if(sel){const idx=data.purchases.findIndex(x=>x.id===op);if(idx>=0)sel.selectedIndex=idx}
+}
+function supplierDetail(id){
+ const s=data.suppliers.find(x=>x.id===id);if(!s)return;
+ modal("Ficha de proveedor",'<div class="kv"><div><label>Razón social</label><strong>'+esc(s.name)+'</strong></div><div><label>CUIT</label><strong>'+esc(s.tax||"Pendiente")+'</strong></div><div><label>Estado</label><strong>'+esc(s.status)+'</strong></div></div><p class="small muted">En la demo, la acción de alta central es simulada y local.</p><div class="notice info">Usuario: Contabilidad Demo. La autorización real dependerá de permisos individuales delegados.</div><div class="actions">'+(s.status==="Provisional"?'<button type="button" class="btn primary" data-action="centralize-supplier" data-id="'+s.id+'">Completar datos y registrar en Maestro Central (simulado)</button>':'')+'</div>',"Cerrar","close-modal");
+}
+function suggestions(docId){
+ const d=data.docs.find(x=>x.id===docId);if(!d)return;
+ const candidates=data.purchases.filter(p=>p.supplier===d.supplier&&p.id!==d.operation);
+ const same=data.purchases.find(p=>p.id===d.operation);
+ let list=[];
+ if(same)list.push({p:same,why:"El comprobante ya figura relacionado con esta operación en los datos de demostración."});
+ candidates.forEach(p=>list.push({p:p,why:"Coincidencia de proveedor. Revisar fecha, artículos y referencias antes de confirmar."}));
+ const rows=list.length?list.map(x=>'<div class="list-row"><div class="grow"><strong>'+x.p.id+' · '+esc(x.p.description)+'</strong><span class="sub-text">'+esc(x.why)+'</span></div><button class="btn small" data-action="confirm-link" data-doc="'+d.id+'" data-operation="'+x.p.id+'">Confirmar vínculo</button></div>').join(""):empty("Sin coincidencias claras","Podés buscar manualmente o crear una operación nueva.");
+ modal("Sugerencias de vinculación",'<div class="notice info"><strong>'+esc(d.type)+' '+esc(d.number)+'</strong>Proveedor: '+esc(d.supplier)+'. Las sugerencias nunca se confirman automáticamente.</div>'+rows,"Cerrar","close-modal");
+}
+function handleSubmit(form){
+ const action=form.dataset.submit,fd=new FormData(form),v=Object.fromEntries(fd.entries());
+ if(action==="save-doc"){
+  const d={id:"DC-"+String(data.docs.length+1).padStart(3,"0"),type:v.type,number:v.number,date:v.date,supplier:v.supplier,total:v.total?Number(v.total):null,currency:v.currency,status:v.status,sector:v.sector,operation:"",items:0};
+  data.docs.unshift(d);save();closeModal();render();toast("Comprobante agregado a la bandeja de demostración.");return;
+ }
+ if(action==="save-purchase"){
+  const id="OP-"+String(41+data.purchases.length).padStart(4,"0");
+  data.purchases.unshift({id:id,supplier:v.supplier,date:v.date,sectors:[v.sector],docs:[],status:"Esperando documentación",receipt:"Pendiente",imputation:"Pendiente",description:v.description,items:[],history:[date(v.date)+" · Operación documental creada en demo"]});
+  save();closeModal();render();toast("Operación creada en la demo.");return;
+ }
+ if(action==="save-article"){
+  data.articles.push({id:"AR-"+String(data.articles.length+1).padStart(3,"0"),code:v.code,name:v.name,unit:v.unit,sectors:[v.sector],status:v.status,type:"Artículo",trace:"Pendiente",price:null});
+  save();closeModal();render();toast("Artículo propuesto en la demo.");return;
+ }
+ if(action==="save-supplier"){
+  const s={id:"PR-"+String(data.suppliers.length+1).padStart(3,"0"),name:v.name,trade:v.trade,tax:v.tax,city:v.city,status:"Provisional",docs:0,taxcondition:v.taxcondition,email:v.email};
+  data.suppliers.push(s);save();closeModal();render();toast("Proveedor provisional creado en la demo.");return;
+ }
+ if(action==="save-service"){
+  data.services.push({id:"SG-"+String(data.services.length+1).padStart(3,"0"),name:v.name,provider:v.provider,date:v.date,amount:Number(v.amount||0),sector:v.sector,status:v.status});
+  save();closeModal();render();toast("Servicio/gasto agregado en la demo.");return;
+ }
+ if(action==="save-imputation"){
+  const mode=v.mode,total=Number(v.total||0),qty=Number(v.quantity||0),vals=[Number(v.v1||0),Number(v.v2||0),Number(v.v3||0)],names=["Empaque","Frigorífico","Administración"];
+  const sum=vals.reduce((a,b)=>a+b,0),target=mode==="Por porcentajes"?100:mode==="Por importes"?total:qty;
+  if(Math.abs(sum-target)>.01){toast("La distribución suma "+sum+" y debe coincidir con "+target+" para la modalidad elegida.");return}
+  const rows=vals.map((n,i)=>({sector:names[i],value:n,percent:mode==="Por porcentajes"?n:mode==="Por importes"?(total?n/total*100:0):(qty?n/qty*100:0),amount:mode==="Por importes"?n:total*(mode==="Por porcentajes"?n/100:(qty?n/qty:0))})).filter(x=>x.value>0);
+  data.imputations.push({id:"IM-"+String(data.imputations.length+1).padStart(3,"0"),operation:v.operation.split(" · ")[0],concept:"Distribución de demo",mode:mode,total:total,rows:rows,status:"Pendiente de revisión"});
+  save();closeModal();render();toast("Imputación guardada como pendiente de revisión.");return;
+ }
+}
+function closeModal(){document.getElementById("modal-root").innerHTML=""}
+function toast(msg){const root=document.getElementById("toast-root");root.innerHTML='<div class="toast">'+esc(msg)+'</div>';setTimeout(()=>root.innerHTML="",2800)}
+function exportCSV(type){
+ let rows=[],name="informe-demo.csv";
+ if(type==="docs"){rows=[["ID","Tipo","Numero","Fecha","Proveedor","Total","Sector","Estado"],...data.docs.map(d=>[d.id,d.type,d.number,d.date,d.supplier,d.total,d.sector,d.status])];name="comprobantes-demo.csv"}
+ if(type==="articles"){rows=[["ID","Codigo","Descripcion","Unidad","Sectores","Estado"],...data.articles.map(a=>[a.id,a.code,a.name,a.unit,a.sectors.join(" / "),a.status])];name="articulos-demo.csv"}
+ if(type==="imputations"){rows=[["ID","Operacion","Concepto","Modalidad","Sector","Importe","Participacion","Estado"]];data.imputations.forEach(m=>m.rows.forEach(r=>rows.push([m.id,m.operation,m.concept,m.mode,r.sector,r.amount,r.percent,m.status])));name="imputaciones-demo.csv"}
+ const csv=rows.map(r=>r.map(x=>'"'+String(x==null?"":x).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+ const a=document.createElement("a"),url=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);toast("Exportación ficticia descargada.");
+}
+document.addEventListener("click",function(e){
+ const nav=e.target.closest("[data-page]");if(nav){go(nav.dataset.page);return}
+ const tab=e.target.closest("[data-detail-tab]");if(tab){detailTab=tab.dataset.detailTab;renderPurchaseDetail();return}
+ const row=e.target.closest("[data-open]");if(row){detailId=row.dataset.open;detailTab="Resumen";page="compras";render();return}
+ const a=e.target.closest("[data-action]");if(!a)return;
+ const act=a.dataset.action;
+ if(act==="go-compras")go("compras");
+ if(act==="go-docs")go("comprobantes");
+ if(act==="new-doc")newDoc();
+ if(act==="new-purchase")newPurchase();
+ if(act==="new-article")newArticle();
+ if(act==="new-supplier")newSupplier();
+ if(act==="new-service")newService();
+ if(act==="new-imputation")newImputation(a.dataset.operation);
+ if(act==="edit-imputation"){const im=data.imputations.find(x=>x.id===a.dataset.id);if(im)toast("La imputación "+im.id+" está disponible para consulta; edición detallada pendiente en esta demo.")}
+ if(act==="doc-suggest")suggestions(a.dataset.doc);
+ if(act==="suggest-link"){const x=data.purchases.find(x=>x.id===detailId);if(x){const d=data.docs.find(d=>d.id===x.docs[0]);if(d)suggestions(d.id);else toast("Esta operación no tiene comprobantes para sugerir.")}}
+ if(act==="confirm-link"){const d=data.docs.find(x=>x.id===a.dataset.doc),p=data.purchases.find(x=>x.id===a.dataset.operation);if(d&&p){if(!p.docs.includes(d.id))p.docs.push(d.id);d.operation=p.id;d.status="Vinculado";p.history.unshift(date(new Date().toISOString().slice(0,10))+" · Documento "+d.id+" vinculado manualmente por usuario demo");save();closeModal();render();toast("Vínculo confirmado en la demo.")}}
+ if(act==="supplier-detail")supplierDetail(a.dataset.id);
+ if(act==="centralize-supplier"){const s=data.suppliers.find(x=>x.id===a.dataset.id);if(s){s.status="Alta central simulada";save();closeModal();render();toast("Alta central simulada. No se modificó ningún maestro real.")}}
+ if(act==="back-purchases"){detailId=null;renderPurchases()}
+ if(act==="close-modal")closeModal();
+ if(act==="export-docs")exportCSV("docs");
+ if(act==="export-articles")exportCSV("articles");
+ if(act==="export-imputations")exportCSV("imputations");
+ if(act==="reset"){if(confirm("¿Restablecer todos los datos ficticios de esta demo? Se borrarán solamente los cambios guardados en este navegador.")){data=clone(seed);save();render();toast("Datos de demostración restablecidos.")}}
+});
+document.addEventListener("submit",function(e){if(e.target.id==="modal-form"){e.preventDefault();handleSubmit(e.target)}});
+document.addEventListener("click",function(e){if(e.target.id==="modal-back")closeModal()});
+function init(){
+ if(!localStorage.getItem(KEY))save();
+ render();
+ document.getElementById("nav").insertAdjacentHTML("beforeend",'<button data-action="reset" style="margin-top:12px;color:#9b4b45"><span class="nav-ico">↺</span>Restablecer demo</button>');
+}
+init();
+})();
+</script>
+</body>
+</html>
