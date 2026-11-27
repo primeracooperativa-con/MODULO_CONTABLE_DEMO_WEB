@@ -171,9 +171,10 @@ function importReaderJSON(file){
   };
   if(duplicate){
    if(duplicate.readerData){toast("Este comprobante ya tiene una lectura importada. No se creó un duplicado.");return;}
-   Object.assign(duplicate,record,{id:duplicate.id,operation:duplicate.operation||""});
-   if(duplicate.status==="Validado"||duplicate.status==="Vinculado")record.status=duplicate.status;
-   Object.assign(duplicate,record,{id:duplicate.id,operation:duplicate.operation||""});
+   const oldId=duplicate.id,oldOperation=duplicate.operation||"",oldSector=duplicate.sector,oldStatus=duplicate.status;
+   const keepStatus=(oldStatus==="Validado"||oldStatus==="Vinculado")?oldStatus:"Por revisar";
+   const keepSector=(sector==="Pendiente de asignar"&&oldSector)?oldSector:sector;
+   Object.assign(duplicate,record,{id:oldId,operation:oldOperation,sector:keepSector,status:keepStatus});
    save();renderDocs();toast("Lectura incorporada al comprobante existente "+duplicate.id+". No se creó un duplicado.");return;
   }
   const nextId=Math.max(0,...data.docs.map(d=>Number(String(d.id||"").replace(/\D/g,""))||0))+1;
