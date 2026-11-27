@@ -188,7 +188,7 @@ async function readImage(file){
     status('OCR: reconstruyendo la tabla por columnas para recuperar renglones omitidos...');
     try{
      const columnRows=await readRemitoColumns(file,worker);
-     if(columnRows)tableText+='\n'+columnRows;
+     if(columnRows)tableText=columnRows+'\n'+tableText;
      else tableFocusError='La lectura por columnas no pudo reconstruir todos los renglones; podés agregarlos manualmente.';
     }catch(e){
      tableFocusError='No se pudo reconstruir la tabla por columnas; podés agregar los artículos manualmente.';
